@@ -1,0 +1,17 @@
+node_modules
+dist
+.DS_Store
+
+# Screenshot output from scripts/shoot.mjs — regenerate rather than commit.
+shots
+stations
+mobile
+mobile-stations
+checks
+
+# More screenshot and experiment output from the visual checks — directories
+# only, so the scripts that produce them are still kept.
+zz*/
+shots*/
+r[0-9]*-*/
+base-*/

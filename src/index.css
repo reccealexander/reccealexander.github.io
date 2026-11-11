@@ -1,0 +1,350 @@
+@import "tailwindcss";
+
+/* Petal design system — the same token contract the DOM site is written
+   against, carried over verbatim so this build and that one stay one brand.
+   The 3D scene reads the same values from lib/palette.ts. */
+@theme {
+  /* The page is the ground the field grows out of, so these carry a green
+     cast rather than being neutral. */
+  --color-void: #0a120d; /* page background — forest floor, not black */
+  --color-shell: #101a13; /* raised surface / cards */
+  --color-raise: #182619; /* hover / inset surface */
+  --color-ink: #f5f2ed; /* primary text, warm off-white */
+  --color-muted: #a0a89c; /* secondary text */
+  --color-line: #1c2a20; /* hairline borders */
+
+  /* Two accents. `bloom` is the flower's own gold and carries the page:
+     nav, buttons, focus, links. `ember` is the app's key-idea highlight
+     orange and is reserved for the product. */
+  --color-bloom: #f2c744;
+  --color-ember: #e4813f;
+
+  --font-display: "Playfair Display", ui-serif, Georgia, serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  color-scheme: dark;
+  /*
+   * Deliberately not `scroll-behavior: smooth`.
+   *
+   * The reference sets it and can afford to: its document is a few screens.
+   * This one is fifteen thousand pixels, and the browser's smooth scroll has a
+   * duration that grows with the distance — focusing a FAQ button leaves the
+   * viewport at zero for three full seconds while the focus ring sits twelve
+   * thousand pixels below the fold, and seven consecutive tab presses land on
+   * a frame that has not moved. The nav animates its own travel on rAF (see
+   * ui/navTargets.ts), where the duration is fixed and the reader can take the
+   * page back off it mid-flight.
+   */
+  /* Cards slide in from off the side of the frame. `clip` rather than
+     `hidden`, which on the root element would turn the viewport into a scroll
+     container and take the fixed scene with it. */
+  overflow-x: clip;
+  /* The canvas is fixed behind everything; overscroll bounce would peel the
+     page off it at the ends of the scroll. */
+  overscroll-behavior-y: none;
+}
+
+body {
+  background-color: var(--color-void);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background-color: color-mix(in srgb, var(--color-bloom) 35%, transparent);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-bloom);
+  outline-offset: 3px;
+}
+
+/*
+ * ...and nothing may quietly opt out of it.
+ *
+ * Tailwind's ring and outline utilities, and the browser's own default on a
+ * filled button, were between them producing four different focus treatments
+ * on one page — including a three-pixel near-black outline drawn hard against
+ * the gold download pill with no offset, which reads as a border rather than
+ * as focus and whose outer edge is void-on-void against the page. One token,
+ * everywhere, is the whole point of having the token.
+ */
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-bloom);
+  outline-offset: 3px;
+}
+
+/* Anchor targets clear the fixed nav instead of hiding under it. */
+section[id] {
+  scroll-margin-top: 5rem;
+}
+
+/* Shared hairline treatment: borders over shadows, everywhere. */
+@utility hairline {
+  border: 1px solid var(--color-line);
+}
+
+/* The one card style the whole scroll uses: a pane of dark glass laid over
+   the scene, never a solid fill. Nothing between the hero and the footer may
+   paint an opaque background — that is what keeps the field on screen the
+   whole way down. */
+@utility pane {
+  border: 1px solid color-mix(in srgb, var(--color-line) 70%, transparent);
+  background-color: color-mix(
+    in srgb,
+    var(--color-void) var(--pane-tint, 72%),
+    transparent
+  );
+  backdrop-filter: blur(12px);
+}
+
+/* On a phone a card is the full width of the frame, so it is always over the
+   busiest part of the field rather than off to one side of it. It has to
+   carry more of its own background there or the copy stops being copy. */
+@media (max-width: 640px) {
+  :root {
+    --pane-tint: 90%;
+  }
+}
+
+/* The biome menu lifts out of its pill rather than appearing. */
+@keyframes biome-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/*
+ * There is no backdrop behind copy. Every block carries its own shadow.
+ *
+ * There used to be one — an edgeless radial two stops darker than whatever the
+ * type happened to be crossing — and it did raise the numbers. It also read as
+ * exactly the thing this scene is built to avoid: a dark cloud following the
+ * words around the field, most obvious behind the wordmark, where a 16rem
+ * gradient sat over the one part of the frame the reader is looking at. What
+ * replaced it is per-block and tight, and the contrast it was covering for was
+ * closed instead by raising the copy's own colour off `ink/70`–`ink/80` to
+ * something nearer the token, by holding the hero's petal image well down, and
+ * by pushing the bloom's eight captions clear of the petals they annotate.
+ *
+ * Tight is the whole point. A wide blur is not a shadow at display sizes, it
+ * is a halo — measured at 10px of spread behind 112px glyphs it is a visible
+ * grey cloud with a hard outer edge where the field resumes. Two short offsets
+ * do the legibility work of one wide one and stop at the glyph.
+ */
+/*
+ * A tight ring was added ahead of the two offsets when the pond became a bright
+ * morning. Until then every biome put near-white copy on something dark and
+ * these two shadows were doing almost nothing; pale water is the first backdrop
+ * on the site that the copy has to fight, and the 5px blur — which is spread,
+ * not edge — is the wrong tool for it. The 1px ring is the same trick the
+ * wordmark already uses one line down and for the same reason: at the glyph's
+ * own edge it buys more separation per pixel of visible artefact than any
+ * amount of blur behind it.
+ *
+ * It is invisible on the three dark biomes, which is the test it had to pass.
+ */
+@utility type-shadow {
+  text-shadow:
+    0 0 1px rgba(6, 16, 9, 0.95),
+    0 1px 2px rgba(6, 16, 9, 0.92),
+    0 0 5px rgba(6, 16, 9, 0.68);
+}
+
+/*
+ * The four labels that are set on the plant's own leaves.
+ *
+ * Every other piece of type on this site is near-white held against a dark
+ * field, and `type-shadow` above is a dark ring drawn around it. These four are
+ * the one inversion: they are printed on a lit blade, which is the palest thing
+ * in the frame at the moment they are read, and near-white on it measured under
+ * two to one. So the ink goes dark and the ring goes pale — the same trick the
+ * other way up.
+ *
+ * The rule set is deliberately blunt (`!important`, and colours overridden by
+ * element rather than by variant) because the markup underneath is the phone
+ * layout's, where these same labels are near-white on grass and every one of
+ * those utility classes is correct. This is a skin applied on top when, and
+ * only when, the label has been laid onto a leaf.
+ */
+/*
+ * Almost no shadow at all, which took two goes to arrive at.
+ *
+ * The first version mirrored `type-shadow` exactly — a 1px ring plus a 2px
+ * offset, in pale instead of dark — and at the size this type ends up on a leaf
+ * that ring is a large fraction of a stroke. It did not outline the glyphs, it
+ * filled them: the label came out lighter than the blade it was printed on. The
+ * ink is already six to one against a lit leaf and does not need help; all that
+ * is left is a single hairline under the baseline, which reads as the type
+ * sitting *in* the surface rather than floating over it.
+ */
+.on-leaf {
+  text-shadow: 0 1px 0 rgba(244, 250, 216, 0.4) !important;
+}
+
+.on-leaf h3,
+.on-leaf p {
+  color: #101a05 !important;
+}
+
+/*
+ * The date and the call to action, which were the two weakest lines in every
+ * review of this.
+ *
+ * They were failing on size and weight rather than on colour: dark rust on a
+ * lit leaf measures better than six to one, which is fine for a paragraph and
+ * not fine for eleven pixels of letterspaced caps sitting on a surface with the
+ * leaf's own veins running under it. So both go darker *and* heavier, and the
+ * tracking comes in — letterspacing is what breaks small caps up first when the
+ * ground underneath them is not flat.
+ */
+.on-leaf .leaf-eyebrow {
+  color: #4a2408 !important;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.on-leaf .leaf-title {
+  /* Heavier than the display face runs elsewhere: this is small type on a
+     surface with the leaf's own veins and shading running under it. */
+  font-weight: 700;
+}
+
+.on-leaf .group:hover .leaf-title {
+  color: #3d2a05 !important;
+}
+
+.on-leaf .leaf-cta {
+  color: #402d04 !important;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+/* Display sizes need less of it: the strokes are heavy enough to carry
+   themselves, and the spread that helps 12px type is a halo at 112px. */
+/*
+ * The wordmark, which is the one piece of type on the site that sits on the
+ * brand's own pink petal rather than on the field.
+ *
+ * A tight dark outline plus one small blur, not a wide one: an outline raises
+ * the effective contrast of near-white on a mid-tone far more per pixel of
+ * visible artefact than a soft glow does, and at display size a wide blur
+ * behind the glyphs reads as a grey smear. This exists so the petal can be the
+ * colour it actually is — it was crushed to a third of its brightness to win
+ * the same fight, which turned the brand mark into a grey shape.
+ */
+@utility mark-shadow {
+  text-shadow:
+    0 0 1px rgba(6, 16, 9, 0.92),
+    0 1px 1px rgba(6, 16, 9, 0.9),
+    0 1px 3px rgba(6, 16, 9, 0.8),
+    0 2px 10px rgba(6, 16, 9, 0.5);
+}
+
+@utility display-shadow {
+  text-shadow:
+    0 1px 2px rgba(6, 16, 9, 0.7),
+    0 2px 6px rgba(6, 16, 9, 0.4);
+}
+
+/*
+ * A station's copy arrives from the direction the camera is travelling.
+ *
+ * Deliberately no `opacity` in here. The card this runs on is remounted every
+ * time the feature changes, so the animation restarts from its first frame —
+ * and on a machine slow enough that the animation clock is starved, a keyframe
+ * that starts at `opacity: 0` leaves the card invisible rather than merely
+ * un-animated. Measured exactly that: a card sitting at computed opacity 0
+ * three seconds after it was due. Whatever this animates has to be something
+ * the card can survive being stuck at.
+ */
+@keyframes station-in {
+  from {
+    transform: translateY(18px);
+    filter: blur(3px);
+  }
+  to {
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+@keyframes readout-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Groundhog bowling: the call after each ball, popped in. */
+@keyframes gh-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.85);
+  }
+  18% {
+    opacity: 1;
+    transform: translateY(0) scale(1.06);
+  }
+  30% {
+    transform: scale(1);
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.gh-pop {
+  animation: gh-pop 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gh-pop {
+    animation: none;
+  }
+}
+
+/* The groundhog's menu, grown out of its body. */
+@keyframes gh-menu {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.gh-menu {
+  animation: gh-menu 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gh-menu {
+    animation: none;
+  }
+}
