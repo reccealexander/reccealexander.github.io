@@ -7,6 +7,7 @@ import { clearingScreen, onClearingOpen, restartClearing } from "@/three/clearin
 import { useJourney } from "./useJourney";
 import Wordmark from "./Wordmark";
 import GuitarMenu from "./GuitarMenu";
+import DrawingMenu from "./DrawingMenu";
 
 /**
  * Standing in the field, at your own height.
@@ -21,7 +22,10 @@ import GuitarMenu from "./GuitarMenu";
  * out it outruns the field and tips back into the page, which clears the frame
  * before the camera starts closing on the flower.
  */
+/** Phrases in the description that open something (ui/GuitarMenu, DrawingMenu). */
 const GUITAR = "playing guitar";
+const DRAWING = "drawing";
+const LIVE = new RegExp(`(${GUITAR}|${DRAWING})`);
 
 export default function Hero() {
   const section = useAct("hero");
@@ -103,23 +107,22 @@ export default function Hero() {
             opened ? "translate-y-0 opacity-100 delay-500" : "translate-y-1.5 opacity-0"
           }`}
         >
-          {hero.description.map((para) => {
-            // "playing guitar" opens the recordings (ui/GuitarMenu).
-            const [before, after] = para.split(GUITAR);
-            return (
-              <p key={para.slice(0, 24)}>
-                {after === undefined ? (
-                  para
+          {hero.description.map((para) => (
+            // "playing guitar" opens the recordings, "drawing" the drawing.
+            <p key={para.slice(0, 24)}>
+              {para.split(LIVE).map((part, i) =>
+                part === GUITAR ? (
+                  // eslint-disable-next-line react/no-array-index-key
+                  <GuitarMenu key={i} label={part} />
+                ) : part === DRAWING ? (
+                  // eslint-disable-next-line react/no-array-index-key
+                  <DrawingMenu key={i} label={part} />
                 ) : (
-                  <>
-                    {before}
-                    <GuitarMenu label={GUITAR} />
-                    {after}
-                  </>
-                )}
-              </p>
-            );
-          })}
+                  part
+                ),
+              )}
+            </p>
+          ))}
         </div>
         {/* Where to find me — arriving with the description. */}
         <div

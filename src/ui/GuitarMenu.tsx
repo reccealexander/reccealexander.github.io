@@ -150,6 +150,7 @@ export default function GuitarMenu({ label }: { label: string }) {
           <ThoughtDots pace={PACE} className="bottom-full left-1/2 mb-0.5" />
           <span
             ref={menu}
+            data-groundhog-menu=""
             role="group"
             aria-label="Guitar recordings"
             style={{ transform: `translateX(calc(-50% + ${nudge}px))` }}

@@ -41,3 +41,11 @@ export const guitar = [
   { id: "dont-know-why", title: "Don’t Know Why", src: "/audio/dont-know-why.m4a" },
   { id: "misty", title: "Misty", src: "/audio/misty.m4a" },
 ] as const;
+
+/** The drawing behind "drawing" in the description (ui/DrawingMenu). */
+export const drawing = {
+  title: "What I\u2019m currently working on... my family:",
+  alt: "A pencil drawing in progress of my family: my mother and father behind, my two younger brothers in front.",
+  small: "/media/family-drawing-small.jpg",
+  large: "/media/family-drawing.jpg",
+} as const;

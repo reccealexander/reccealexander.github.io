@@ -364,3 +364,18 @@ section[id] {
     animation: none;
   }
 }
+
+/* The drawing, grown to fill the screen (ui/DrawingMenu): the page dims in. */
+@keyframes drawing-backdrop {
+  from {
+    background-color: rgb(0 0 0 / 0);
+  }
+}
+.drawing-backdrop {
+  animation: drawing-backdrop 0.35s ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .drawing-backdrop {
+    animation: none;
+  }
+}
