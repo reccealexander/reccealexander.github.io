@@ -138,7 +138,15 @@ export default function CdPlayer({
       </g>
 
       {/* The control strip. */}
-      <rect x={P.x} y={LID_BOTTOM} width={P.size} height={BOTTOM - LID_BOTTOM} fill="#bccac4" />
+      {/* Copper, with a little shine along it. */}
+      <defs>
+        <linearGradient id="cd-copper" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#d9935a" />
+          <stop offset="0.45" stopColor="#b8703b" />
+          <stop offset="1" stopColor="#8f522a" />
+        </linearGradient>
+      </defs>
+      <rect x={P.x} y={LID_BOTTOM} width={P.size} height={BOTTOM - LID_BOTTOM} fill="url(#cd-copper)" />
       {/* The display: amber on near-black, in a terminal face, glowing. */}
       <defs>
         <filter id="cd-glow" x="-20%" y="-50%" width="140%" height="200%">
