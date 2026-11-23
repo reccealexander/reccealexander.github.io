@@ -9,8 +9,8 @@ import Cloud, { DOT_ANCHOR } from "./Cloud";
  *
  * Like the guitar (ui/GuitarMenu): hovering the phrase — or tapping it —
  * bubbles up a small cloud above it, the same size as the guitar's, with the
- * drawing in it under its title. Pressing that cloud grows it, from where it
- * is, into one that fills nearly the whole screen; pressing anywhere, the ×, or
+ * drawing in it beside its title. Pressing that cloud grows the drawing, from
+ * where it is, to fill nearly the whole screen; pressing anywhere, the ×, or
  * Escape puts it back. The big one is drawn on the page itself, outside the
  * hero's faded, transformed block, so it is not dimmed or moved with it.
  */
@@ -21,7 +21,7 @@ export default function DrawingMenu({ label }: { label: string }) {
   const [big, setBig] = useState(false);
   const root = useRef<HTMLSpanElement>(null);
   const menu = useRef<HTMLSpanElement>(null);
-  const bigCloud = useRef<HTMLDivElement>(null);
+  const bigCloud = useRef<HTMLElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
   const from = useRef<DOMRect | null>(null);
   const closeAt = useRef(0);
@@ -185,25 +185,21 @@ export default function DrawingMenu({ label }: { label: string }) {
             onClick={() => setBig(false)}
             className="drawing-backdrop fixed inset-0 z-[70] grid place-items-center bg-black/45 p-6"
           >
-            <div ref={bigCloud} className="relative">
-              {/* Title over the drawing on a wide screen; beside it on a narrow
-                  one, where the cloud's own shape leaves no room above. */}
-              <Cloud
-                bodyClassName="flex flex-row items-center gap-3 sm:flex-col sm:gap-2"
-              >
-                <p className="w-24 text-left text-sm font-semibold leading-snug sm:w-auto sm:text-center sm:text-lg">
-                  {drawing.title}
-                </p>
-                <img
-                  src={drawing.large}
-                  alt={drawing.alt}
-                  width={2400}
-                  height={1874}
-                  className="block rounded-lg shadow-[0_4px_14px_rgba(0,0,0,0.22)]"
-                  style={{ height: "min(37vh, 27vw)", width: "auto" }}
-                />
-              </Cloud>
-            </div>
+            {/* The drawing itself, large, on the dimmed page — grown out of
+                the small cloud. */}
+            <figure ref={bigCloud} className="flex flex-col items-center gap-3">
+              <figcaption className="text-center text-base font-semibold text-ink [text-shadow:0_1px_3px_rgba(0,0,0,0.6)] sm:text-lg">
+                {drawing.title}
+              </figcaption>
+              <img
+                src={drawing.large}
+                alt={drawing.alt}
+                width={2400}
+                height={1874}
+                className="block rounded-lg shadow-[0_18px_50px_rgba(0,0,0,0.55)]"
+                style={{ width: "min(88vw, calc((84vh - 3rem) * 1.28))", height: "auto" }}
+              />
+            </figure>
             <button
               ref={closeButton}
               type="button"
