@@ -174,7 +174,25 @@ export default function CdPlayer({
         <rect x={P.x + 81.2} y={LID_BOTTOM + 9.2} width={5.6} height={5.6} rx={0.8} fill={INK} />
       </g>
 
-      {/* The case: sharp corners, one line round it, and the lid's edge. */}
+      {/* The case: a thin copper frame all the way round, inside one ink
+          line with sharp corners, and the lid's edge. */}
+      <rect
+        x={P.x + 2.4}
+        y={P.y + 2.4}
+        width={P.size - 4.8}
+        height={BOTTOM - P.y - 4.8}
+        fill="none"
+        stroke="url(#cd-copper-frame)"
+        strokeWidth={2.6}
+        strokeLinejoin="miter"
+      />
+      <defs>
+        <linearGradient id="cd-copper-frame" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#e3a06a" />
+          <stop offset="0.5" stopColor="#b8703b" />
+          <stop offset="1" stopColor="#8f522a" />
+        </linearGradient>
+      </defs>
       <rect x={P.x} y={P.y} width={P.size} height={BOTTOM - P.y} fill="none" stroke={INK} strokeWidth={2.8} strokeLinejoin="miter" />
       <path d={`M${P.x},${LID_BOTTOM} H${RIGHT}`} stroke={INK} strokeWidth={2.2} />
     </svg>
