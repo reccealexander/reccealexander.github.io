@@ -157,12 +157,9 @@ export default function GuitarMenu({ label }: { label: string }) {
             style={{ transform: `translateX(calc(${-DOT_ANCHOR * 100}% + ${nudge}px))` }}
             className="absolute bottom-full left-1/2 z-20 mb-0.5 block w-max text-left [text-shadow:none]"
           >
-            {/* Laid out like the biome menu (ui/BiomePicker): a small
-                heading, the titles as rows, and the one playing marked. */}
-            <Cloud dots="left" pace={PACE} bodyClassName="w-40">
-              <span className="block px-1.5 pb-1 text-[0.6rem] uppercase tracking-[0.2em] text-void/55">
-                Guitar
-              </span>
+            {/* Just the titles, as rows, in the biome menu's type; the one
+                playing is set bold on a shaded row. */}
+            <Cloud dots="left" pace={PACE} bodyClassName="w-max">
               {guitar.map((t) => {
                 const on = playing === t.id;
                 return (
@@ -172,17 +169,11 @@ export default function GuitarMenu({ label }: { label: string }) {
                     onClick={() => play(t.id, t.src)}
                     aria-pressed={on}
                     aria-label={`${on ? "Pause" : "Play"} ${t.title}`}
-                    className={`flex w-full items-center gap-2 rounded-md px-1.5 py-0.5 text-left text-[0.8rem] transition-colors ${
+                    className={`block w-full whitespace-nowrap rounded-md px-1.5 py-px text-left text-[0.78rem] transition-colors ${
                       on ? "bg-void/10 font-semibold" : "hover:bg-void/[0.07] focus-visible:bg-void/[0.07]"
                     }`}
                   >
-                    <span className="min-w-0 flex-1">{t.title}</span>
-                    <span
-                      aria-hidden="true"
-                      className={`h-1.5 w-1.5 shrink-0 rounded-full bg-ember transition-opacity ${
-                        on ? "opacity-100" : "opacity-0"
-                      }`}
-                    />
+                    {t.title}
                   </button>
                 );
               })}
