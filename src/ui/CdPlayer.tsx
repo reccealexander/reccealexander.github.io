@@ -29,7 +29,7 @@ const SEAT = { x: P.x + P.size / 2, y: P.y + P.size / 2 };
 /** Discs that all but fill the lid; the row of them level with the seat, the
     first tucked in under the lid's edge. */
 const R = 46;
-const discX = (i: number) => RIGHT + R - 14 + i * 20;
+const discX = (i: number) => RIGHT + R - 14 + i * 14;
 
 function Disc({ x, y, r, colour }: { x: number; y: number; r: number; colour: string }) {
   return (
@@ -80,11 +80,11 @@ export default function CdPlayer({
   const order = tracks.map((t, i) => ({ t, i })).reverse();
 
   return (
-    <svg viewBox="0 0 268 130" className="block h-auto w-[228px] overflow-visible sm:w-[264px]" aria-label="CD player">
+    <svg viewBox="0 0 268 130" className="absolute left-0 top-0 block h-auto w-[214px] overflow-visible" aria-label="CD player">
       {/* The lead: plugged into the side by a jack, coiling away below — and
           ending inside the cloud. */}
       <path
-        d={`M${P.x - 15},${BOTTOM - 10} C${P.x - 30},${BOTTOM - 8} ${P.x - 36},${BOTTOM + 6} ${P.x - 30},${BOTTOM + 16} C${P.x - 24},${BOTTOM + 26} ${P.x - 6},${BOTTOM + 26} ${P.x + 6},${BOTTOM + 20}`}
+        d={`M${P.x - 15},${BOTTOM - 10} C${P.x - 24},${BOTTOM - 10} ${P.x - 28},${BOTTOM - 4} ${P.x - 25},${BOTTOM + 1} C${P.x - 22},${BOTTOM + 5} ${P.x - 14},${BOTTOM + 5} ${P.x - 9},${BOTTOM + 2}`}
         fill="none"
         stroke={INK}
         strokeWidth={3.4}

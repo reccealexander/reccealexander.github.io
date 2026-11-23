@@ -18,6 +18,14 @@ import { CLOUD, CLOUD_DOTS, CLOUD_MIDDLE, CLOUD_ROOM } from "./cloudShape";
 
 const BOX = CLOUD.box;
 
+/** The inside of the cloud, as points, for trimming contents to it. */
+const INSIDE = CLOUD.fill
+  .replace(/[MZ]/g, " ")
+  .trim()
+  .split(/\s*L\s*|\s+/)
+  .filter(Boolean)
+  .map((p) => p.split(",").map(Number) as [number, number]);
+
 /** How much of the cloud a box of contents centred in it can take. */
 function room(aspect: number) {
   const t = Math.min(1, Math.max(0, (aspect - 1.45) / 0.55));
@@ -39,6 +47,7 @@ export default function Cloud({
   style,
   dots,
   pace = 1,
+  clip = false,
   children,
 }: {
   className?: string;
@@ -47,6 +56,8 @@ export default function Cloud({
   /** Trail the rings down to the left (as drawn) or, mirrored, to the right. */
   dots?: "left" | "right";
   pace?: number;
+  /** Trim whatever reaches past the inside of the cloud's line. */
+  clip?: boolean;
   children: ReactNode;
 }) {
   const body = useRef<HTMLSpanElement>(null);
@@ -100,7 +111,19 @@ export default function Cloud({
             <path d={CLOUD.ink} fill="#141414" fillRule="evenodd" />
           </svg>
         )}
-        <span ref={body} className={`relative block text-void ${bodyClassName}`}>
+        <span
+          ref={body}
+          className={`relative block text-void ${bodyClassName}`}
+          style={
+            clip && fit
+              ? {
+                  clipPath: `path("M${INSIDE.map(
+                    ([x, y]) => `${((x - BOX.x) * fit.s - fit.l).toFixed(1)},${((y - BOX.y) * fit.s - fit.t).toFixed(1)}`,
+                  ).join(" L")}Z")`,
+                }
+              : undefined
+          }
+        >
           {children}
         </span>
       </span>
