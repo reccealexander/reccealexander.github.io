@@ -356,16 +356,8 @@ section[id] {
   }
 }
 
-/* The CD player (ui/CdPlayer): the disc shows in the window once it has slid
-   in, and turns while it plays. */
-@keyframes cd-in {
-  from {
-    opacity: 0;
-  }
-}
-.cd-in {
-  animation: cd-in 0.25s ease-out 0.35s both;
-}
+/* The CD player (ui/CdPlayer): the disc turns under the lid once it has slid
+   in. */
 @keyframes cd-spin {
   to {
     transform: rotate(360deg);
@@ -376,8 +368,10 @@ section[id] {
   transform-origin: center;
   animation: cd-spin 2.4s linear infinite;
 }
+.cd-spin-late {
+  animation-delay: 0.5s;
+}
 @media (prefers-reduced-motion: reduce) {
-  .cd-in,
   .cd-spin {
     animation: none;
   }
