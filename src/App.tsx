@@ -8,6 +8,7 @@ import Hero from "@/ui/Hero";
 import BiomePicker from "@/ui/BiomePicker";
 import TimePicker from "@/ui/TimePicker";
 import StartBanner from "@/ui/StartBanner";
+import MusicNotes from "@/ui/MusicNotes";
 import LeafPage from "@/ui/LeafPage";
 import { cancelGlide } from "@/ui/navTargets";
 
@@ -83,6 +84,8 @@ function Field() {
         Skip to content
       </a>
       <Scene />
+      {/* Notes over the field while a guitar recording plays. */}
+      <MusicNotes />
       <main id="main" className="relative z-10">
         <Hero />
         <Outro />

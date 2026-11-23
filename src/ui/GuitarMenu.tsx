@@ -1,13 +1,16 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { guitar } from "@/lib/copy";
+import { setMusicPlaying } from "@/lib/music";
 
 /**
  * "playing guitar", in the description, with a few recordings behind it.
  *
  * Hovering the phrase (or tapping it, on a phone, or pressing it from the
  * keyboard) opens a small menu just above it; a track in it starts playing
- * and the menu gets out of the way, and opened again, the same track pauses. One plays at a time, through the one audio element, and the
+ * and the menu gets out of the way; opened again, the same track stops, back
+ * at its start. One plays at a time, through the one audio element, and the
  * menu stays put while the cursor crosses the gap from the phrase to it.
+ * While anything plays, notes drift over the field (ui/MusicNotes).
  */
 export default function GuitarMenu({ label }: { label: string }) {
   const [open, setOpen] = useState(false);
@@ -44,6 +47,7 @@ export default function GuitarMenu({ label }: { label: string }) {
     const ended = () => {
       setPlaying(null);
       setProgress(0);
+      setMusicPlaying(false);
     };
     const tick = () => setProgress(a.duration ? a.currentTime / a.duration : 0);
     a.addEventListener("ended", ended);
@@ -51,6 +55,7 @@ export default function GuitarMenu({ label }: { label: string }) {
     audio.current = a;
     return () => {
       a.pause();
+      setMusicPlaying(false);
       a.removeEventListener("ended", ended);
       a.removeEventListener("timeupdate", tick);
       audio.current = null;
@@ -88,8 +93,12 @@ export default function GuitarMenu({ label }: { label: string }) {
     const a = audio.current;
     if (!a) return;
     if (playing === id) {
+      // Paused, it goes back to the top: played again, it starts over.
       a.pause();
+      a.currentTime = 0;
+      setProgress(0);
       setPlaying(null);
+      setMusicPlaying(false);
       return;
     }
     if (!a.src.endsWith(src)) {
@@ -97,8 +106,14 @@ export default function GuitarMenu({ label }: { label: string }) {
       setProgress(0);
     }
     a.play().then(
-      () => setPlaying(id),
-      () => setPlaying(null),
+      () => {
+        setPlaying(id);
+        setMusicPlaying(true);
+      },
+      () => {
+        setPlaying(null);
+        setMusicPlaying(false);
+      },
     );
     // Started: the menu has done its job.
     window.clearTimeout(closeAt.current);
