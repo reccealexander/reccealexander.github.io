@@ -86,7 +86,7 @@ export default function DrawingMenu({ label }: { label: string }) {
           { transform: `translate(${dx}px, ${dy}px) scale(${s})`, opacity: 0.85 },
           { transform: "translate(0, 0) scale(1)", opacity: 1 },
         ],
-        { duration: 460, easing: "cubic-bezier(0.2, 0.9, 0.3, 1.05)" },
+        { duration: 460, easing: "cubic-bezier(0.2, 0.8, 0.3, 1)" },
       );
     }
     closeButton.current?.focus({ preventScroll: true });
