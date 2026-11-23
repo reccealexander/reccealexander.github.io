@@ -115,19 +115,18 @@ export default function BiomePicker() {
       {open && (
         <>
           {/* A thought bubble: two dots up off the button, then the cloud. */}
-          <ThoughtDots flip className="bottom-full right-10 mb-1" />
+          <ThoughtDots flip className="bottom-full right-12 mb-1" />
           <div
             role="menu"
             aria-label="Biome"
             onKeyDown={onMenuKey}
-            className="absolute bottom-full right-3 mb-[2.9rem] w-44"
+            className="absolute bottom-full right-0 mb-[2.9rem] w-max"
           >
             <Cloud
-              puff={0.42}
               opacity={1}
               className="bubble-pop origin-bottom-right"
               style={{ animationDelay: THOUGHT_DELAY }}
-              bodyClassName="py-0.5"
+              bodyClassName="w-36"
             >
               <span className="block px-1.5 pb-1 text-[0.6rem] uppercase tracking-[0.2em] text-void/55">
                 Biome
@@ -144,7 +143,7 @@ export default function BiomePicker() {
                     role="menuitemradio"
                     aria-checked={active}
                     onClick={() => choose(b.id)}
-                    className={`flex w-full items-center gap-2 rounded-md px-1.5 py-1 text-left text-[0.8rem] transition-colors ${
+                    className={`flex w-full items-center gap-2 rounded-md px-1.5 py-0.5 text-left text-[0.8rem] transition-colors ${
                       active ? "bg-void/10 font-semibold" : "hover:bg-void/[0.07] focus-visible:bg-void/[0.07]"
                     }`}
                   >

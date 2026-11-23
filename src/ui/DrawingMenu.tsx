@@ -27,7 +27,8 @@ export default function DrawingMenu({ label }: { label: string }) {
   const closeAt = useRef(0);
   const [nudge, setNudge] = useState(0);
 
-  // Centred over the phrase, but kept on the screen.
+  // Centred over the phrase, but kept on the screen — checked again as the
+  // cloud grows to its full size, not only as it opens.
   useLayoutEffect(() => {
     if (!open) {
       setNudge(0);
@@ -35,13 +36,22 @@ export default function DrawingMenu({ label }: { label: string }) {
     }
     const el = menu.current;
     if (!el) return;
-    const r = el.getBoundingClientRect();
-    const left = r.left - nudge;
-    const margin = 24;
-    const over = left + r.width - (window.innerWidth - margin);
-    setNudge(over > 0 ? -over : left < margin ? margin - left : 0);
-    // Measured once as it opens.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let current = 0;
+    const fit = () => {
+      const r = el.getBoundingClientRect();
+      const left = r.left - current;
+      const margin = 8;
+      const over = left + r.width - (window.innerWidth - margin);
+      const next = over > 0 ? -over : left < margin ? margin - left : 0;
+      if (Math.abs(next - current) > 0.5) {
+        current = next;
+        setNudge(next);
+      }
+    };
+    fit();
+    const watch = new ResizeObserver(fit);
+    watch.observe(el);
+    return () => watch.disconnect();
   }, [open]);
 
   // Escape, or a press anywhere else, puts the small one away.
@@ -136,30 +146,29 @@ export default function DrawingMenu({ label }: { label: string }) {
             ref={menu}
             data-groundhog-menu=""
             style={{ transform: `translateX(calc(-50% + ${nudge}px))` }}
-            className="absolute bottom-full left-1/2 z-20 mb-[2.6rem] block w-48 text-left [text-shadow:none]"
+            className="absolute bottom-full left-1/2 z-20 mb-[2.75rem] block w-max text-left [text-shadow:none]"
           >
             <Cloud
-              puff={0.42}
               opacity={1}
               className="bubble-pop origin-bottom"
               style={thoughtTiming(PACE)}
-              bodyClassName="py-0.5"
+              bodyClassName=""
             >
               <button
                 type="button"
                 onClick={grow}
                 aria-label={`${drawing.title} Open it larger.`}
-                className="group block w-full text-left"
+                className="group flex items-center gap-2 text-left"
               >
-                <span className="block px-0.5 pb-1 text-[0.7rem] font-semibold leading-snug">
+                <span className="block w-[5.5rem] text-[0.7rem] font-semibold leading-snug">
                   {drawing.title}
                 </span>
                 <img
                   src={drawing.small}
                   alt={drawing.alt}
                   width={640}
-                  height={480}
-                  className="block w-full rounded-md shadow-[0_2px_6px_rgba(0,0,0,0.18)] transition-transform duration-200 group-hover:scale-[1.02]"
+                  height={500}
+                  className="block w-[8.5rem] rounded-md shadow-[0_2px_6px_rgba(0,0,0,0.18)] transition-transform duration-200 group-hover:scale-[1.02]"
                 />
               </button>
             </Cloud>
@@ -178,15 +187,22 @@ export default function DrawingMenu({ label }: { label: string }) {
             className="drawing-backdrop fixed inset-0 z-[70] grid place-items-center bg-black/45 p-6"
           >
             <div ref={bigCloud} className="relative">
-              <Cloud puff={0.8} opacity={1} bodyClassName="px-2 py-1 text-center">
-                <p className="pb-2 text-base font-semibold sm:text-lg">{drawing.title}</p>
+              {/* Title over the drawing on a wide screen; beside it on a narrow
+                  one, where the cloud's own shape leaves no room above. */}
+              <Cloud
+                opacity={1}
+                bodyClassName="flex flex-row items-center gap-3 sm:flex-col sm:gap-2"
+              >
+                <p className="w-24 text-left text-sm font-semibold leading-snug sm:w-auto sm:text-center sm:text-lg">
+                  {drawing.title}
+                </p>
                 <img
                   src={drawing.large}
                   alt={drawing.alt}
                   width={2400}
-                  height={1800}
+                  height={1874}
                   className="block rounded-lg shadow-[0_4px_14px_rgba(0,0,0,0.22)]"
-                  style={{ width: "min(80vw, 100vw - 6rem, calc((80vh - 4rem) * 4 / 3))" }}
+                  style={{ height: "min(42vh, 31vw)", width: "auto" }}
                 />
               </Cloud>
             </div>

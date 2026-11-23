@@ -26,8 +26,8 @@ export default function GuitarMenu({ label }: { label: string }) {
   const menu = useRef<HTMLSpanElement>(null);
   const [nudge, setNudge] = useState(0);
 
-  // Centred over the phrase, but kept on the screen: near an edge (the phrase
-  // is at the right on a phone) it slides in from it.
+  // Centred over the phrase, but kept on the screen — checked again as the
+  // cloud grows to its full size, not only as it opens.
   useLayoutEffect(() => {
     if (!open) {
       setNudge(0);
@@ -35,14 +35,22 @@ export default function GuitarMenu({ label }: { label: string }) {
     }
     const el = menu.current;
     if (!el) return;
-    const r = el.getBoundingClientRect();
-    const left = r.left - nudge;
-    // The puffs stand out past the box by about this much.
-    const margin = 24;
-    const over = left + r.width - (window.innerWidth - margin);
-    setNudge(over > 0 ? -over : left < margin ? margin - left : 0);
-    // Measured once as it opens.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let current = 0;
+    const fit = () => {
+      const r = el.getBoundingClientRect();
+      const left = r.left - current;
+      const margin = 8;
+      const over = left + r.width - (window.innerWidth - margin);
+      const next = over > 0 ? -over : left < margin ? margin - left : 0;
+      if (Math.abs(next - current) > 0.5) {
+        current = next;
+        setNudge(next);
+      }
+    };
+    fit();
+    const watch = new ResizeObserver(fit);
+    watch.observe(el);
+    return () => watch.disconnect();
   }, [open]);
 
   // The player, made once and stopped on the way out.
@@ -154,14 +162,13 @@ export default function GuitarMenu({ label }: { label: string }) {
             role="group"
             aria-label="Guitar recordings"
             style={{ transform: `translateX(calc(-50% + ${nudge}px))` }}
-            className="absolute bottom-full left-1/2 z-20 mb-[2.6rem] block w-48 text-left [text-shadow:none]"
+            className="absolute bottom-full left-1/2 z-20 mb-[2.75rem] block w-max text-left [text-shadow:none]"
           >
             <Cloud
-              puff={0.42}
               opacity={1}
               className="bubble-pop origin-bottom"
               style={thoughtTiming(PACE)}
-              bodyClassName="py-0.5"
+              bodyClassName="w-44"
             >
               {guitar.map((t) => {
                 const on = playing === t.id;
@@ -172,7 +179,7 @@ export default function GuitarMenu({ label }: { label: string }) {
                     onClick={() => play(t.id, t.src)}
                     aria-pressed={on}
                     aria-label={`${on ? "Pause" : "Play"} ${t.title}`}
-                    className={`relative flex w-full items-center gap-2 overflow-hidden rounded-md px-1.5 py-1 text-[0.78rem] transition-colors ${
+                    className={`relative flex w-full items-center gap-2 overflow-hidden rounded-md px-1.5 py-0.5 text-[0.78rem] transition-colors ${
                       on ? "bg-void/10 font-semibold" : "hover:bg-void/[0.07]"
                     }`}
                   >

@@ -4,75 +4,32 @@ import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode }
  * A cloud: what the site's menus open as — a thought bubble, the dots leading
  * up to it drawn by ThoughtDots below.
  *
- * Drawn as one shape — a rounded body the size of what is in it, and a ring
- * of puffs all the way round its edge, of a few different sizes — so it reads
- * as a cloud from any side rather than a box with bumps on it. The puffs are
- * laid out from the body's measured size, so they stay round however wide or
- * tall it is, and they stand out past it, which keeps whatever is written
- * inside clear of the scalloped edge. It is filled as one group, so it can be
- * a little see-through without the overlaps showing as seams.
+ * The shape is a hand-drawn thought bubble, traced: six uneven lobes with a
+ * notch where each meets the next, a cream fill and a dark pen line round it.
+ * It is never stretched — always the same proportions, scaled as a whole until
+ * what is in it fits the safe middle of it, which keeps the lobes round and the
+ * contents clear of the notches. The cloud's own box is the whole drawing, so
+ * a menu is placed by what is seen.
  */
 
-/** Even but not regular: the same cloud every time, never a cog. */
-const jitter = (i: number) => {
-  const x = Math.sin(i * 12.9898 + 4.1) * 43758.5453;
-  return x - Math.floor(x);
-};
-
-/** A point `d` of the way round a rounded rectangle w×h (corner radius c),
-    clockwise from the top-left end of its top edge. */
-function around(d: number, w: number, h: number, c: number) {
-  const sx = w - 2 * c;
-  const sy = h - 2 * c;
-  const q = (Math.PI / 2) * c;
-  const legs = [sx, q, sy, q, sx, q, sy, q];
-  let i = 0;
-  while (i < 7 && d > legs[i]) d -= legs[i++];
-  const corner = (cx: number, cy: number, from: number) => {
-    const t = from + (c > 0 ? d / c : 0);
-    return { x: cx + c * Math.cos(t), y: cy + c * Math.sin(t) };
-  };
-  switch (i) {
-    case 0: return { x: c + d, y: 0 };
-    case 1: return corner(w - c, c, -Math.PI / 2);
-    case 2: return { x: w, y: c + d };
-    case 3: return corner(w - c, h - c, 0);
-    case 4: return { x: w - c - d, y: h };
-    case 5: return corner(c, h - c, Math.PI / 2);
-    case 6: return { x: 0, y: h - c - d };
-    default: return corner(c, c, Math.PI);
-  }
-}
-
-function puffs(w: number, h: number, scale: number) {
-  // The puff size follows the cloud's height, within reason.
-  const r = Math.min(Math.max(h * 0.4, 11), 34) * scale;
-  // Centred on the body's edge, evenly by distance round it — so there are
-  // as many along a long side as its length calls for, and no flat gaps.
-  const c = Math.min(r, w / 2, h / 2);
-  const length = 2 * (w - 2 * c) + 2 * (h - 2 * c) + 2 * Math.PI * c;
-  const n = Math.max(6, Math.round(length / (r * 1.15)));
-  const out: { x: number; y: number; r: number }[] = [];
-  for (let i = 0; i < n; i++) {
-    const p = around(((i + 0.3) / n) * length, w, h, c);
-    out.push({ ...p, r: r * (0.84 + 0.32 * jitter(i)) });
-  }
-  return { r, out };
-}
+/** The traced outline, in its own units. */
+const PATH =
+  "M96,84 C110,10 240,-20 271,70 C360,40 490,130 365,198 C420,270 320,360 248,276 " +
+  "C225,350 110,350 88,263 C10,290 -35,180 43,148 C5,110 40,45 96,84 Z";
+const VIEW = { x: 2.4, y: 14.4, w: 414.3, h: 315.6 };
+/** The part of it that is safely inside, as fractions of its width and height. */
+const SAFE = { x0: 0.14, x1: 0.87, y0: 0.23, y1: 0.78 };
 
 export default function Cloud({
   className = "",
   bodyClassName = "",
   style,
-  puff = 1,
-  opacity = 0.88,
+  opacity = 1,
   children,
 }: {
   className?: string;
   bodyClassName?: string;
   style?: CSSProperties;
-  /** Bigger or smaller puffs than the default for the cloud's size. */
-  puff?: number;
   opacity?: number;
   children: ReactNode;
 }) {
@@ -89,32 +46,44 @@ export default function Cloud({
     return () => watch.disconnect();
   }, []);
 
-  const shape = size && puffs(size.w, size.h, puff);
-  const m = shape ? shape.r * 1.3 + 2 : 0;
+  // Scaled, as a whole, until the contents fit the safe middle; the contents
+  // sit at the middle of that.
+  let pad: { l: number; r: number; t: number; b: number } | null = null;
+  if (size) {
+    const s = Math.max(
+      size.w / ((SAFE.x1 - SAFE.x0) * VIEW.w),
+      size.h / ((SAFE.y1 - SAFE.y0) * VIEW.h),
+    );
+    const W = VIEW.w * s;
+    const H = VIEW.h * s;
+    const l = ((SAFE.x0 + SAFE.x1) / 2) * W - size.w / 2;
+    const t = ((SAFE.y0 + SAFE.y1) / 2) * H - size.h / 2;
+    pad = { l, t, r: W - size.w - l, b: H - size.h - t };
+  }
 
   return (
     // Spans, not divs, so a menu inside a paragraph can be one.
-    <span className={`relative block ${className}`} style={style}>
-      {size && shape && (
+    <span
+      className={`relative block w-max ${className}`}
+      style={{ ...style, padding: pad ? `${pad.t}px ${pad.r}px ${pad.b}px ${pad.l}px` : undefined }}
+    >
+      {pad && (
         <svg
           aria-hidden="true"
-          className="pointer-events-none absolute overflow-visible"
-          style={{
-            left: -m,
-            top: -m,
-            width: size.w + 2 * m,
-            height: size.h + 2 * m,
-            filter: "drop-shadow(0 10px 22px rgba(0,0,0,0.35))",
-          }}
-          viewBox={`${-m} ${-m} ${size.w + 2 * m} ${size.h + 2 * m}`}
+          className="pointer-events-none absolute left-0 top-0 h-full w-full overflow-visible"
+          style={{ filter: "drop-shadow(0 8px 18px rgba(0,0,0,0.32))" }}
+          viewBox={`${VIEW.x} ${VIEW.y} ${VIEW.w} ${VIEW.h}`}
+          preserveAspectRatio="none"
         >
-          <g fill="var(--color-cloud)" opacity={opacity}>
-            <rect width={size.w} height={size.h} rx={Math.min(shape.r, size.w / 2, size.h / 2)} />
-            {shape.out.map((p, i) => (
-              // eslint-disable-next-line react/no-array-index-key
-              <circle key={i} cx={p.x} cy={p.y} r={p.r} />
-            ))}
-          </g>
+          <path
+            d={PATH}
+            fill="var(--color-cloud)"
+            fillOpacity={opacity}
+            stroke="#141414"
+            strokeWidth={2.6}
+            strokeLinejoin="round"
+            vectorEffect="non-scaling-stroke"
+          />
         </svg>
       )}
       <span ref={body} className={`relative block text-void ${bodyClassName}`}>
@@ -125,19 +94,26 @@ export default function Cloud({
 }
 
 /**
- * The two little dots a thought bubble trails back to where it came from,
- * popping in one after the other before the cloud itself (give the cloud
- * `bubble-pop` with `thoughtTiming(pace)`). Placed by the caller; `flip` runs
- * them up and to the left rather than to the right. `pace` stretches the whole
+ * The three dots a thought bubble trails back to where it came from, small to
+ * large on the way up, popping in one after the other before the cloud itself
+ * (give the cloud `bubble-pop` with `thoughtTiming(pace)`). Placed by the
+ * caller, with the cloud's bottom about 2.6rem above where they start; `flip`
+ * runs them up to the left rather than the right. `pace` stretches the whole
  * sequence: 1 is quick, 2 takes twice as long.
  */
-export const THOUGHT_DELAY = "0.11s";
+export const THOUGHT_DELAY = "0.15s";
 
 /** Style for the cloud at the end of a thought bubble, at the given pace. */
 export const thoughtTiming = (pace = 1) => ({
-  animationDelay: `${0.11 * pace}s`,
+  animationDelay: `${0.15 * pace}s`,
   animationDuration: `${0.18 * pace}s`,
 });
+
+const DOTS = [
+  { size: 7, x: 0, y: 0 },
+  { size: 11, x: 8, y: 10 },
+  { size: 16, x: 19, y: 24 },
+];
 
 export function ThoughtDots({
   className = "",
@@ -148,17 +124,22 @@ export function ThoughtDots({
   flip?: boolean;
   pace?: number;
 }) {
-  const dot = "bubble-pop absolute rounded-full bg-cloud shadow-[0_3px_8px_rgba(0,0,0,0.3)]";
   return (
-    <span aria-hidden="true" className={`pointer-events-none absolute h-6 w-5 ${className}`}>
-      <span
-        className={`${dot} bottom-0 h-[6px] w-[6px] ${flip ? "right-0" : "left-0"}`}
-        style={{ animationDuration: `${0.18 * pace}s` }}
-      />
-      <span
-        className={`${dot} bottom-[9px] h-[10px] w-[10px] ${flip ? "right-[7px]" : "left-[7px]"}`}
-        style={{ animationDelay: `${0.055 * pace}s`, animationDuration: `${0.18 * pace}s` }}
-      />
+    <span aria-hidden="true" className={`pointer-events-none absolute h-10 w-[35px] ${className}`}>
+      {DOTS.map((d, i) => (
+        <span
+          key={d.size}
+          className="bubble-pop absolute rounded-full border-2 border-[#141414] bg-cloud shadow-[0_3px_8px_rgba(0,0,0,0.3)]"
+          style={{
+            width: d.size,
+            height: d.size,
+            bottom: d.y,
+            [flip ? "right" : "left"]: d.x,
+            animationDelay: `${0.05 * i * pace}s`,
+            animationDuration: `${0.18 * pace}s`,
+          }}
+        />
+      ))}
     </span>
   );
 }
