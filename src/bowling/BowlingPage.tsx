@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Canvas } from "@react-three/fiber";
 import { navigate, onNavigate } from "@/lib/router";
+import Cloud from "@/ui/Cloud";
 import { markBowlingReady, resetBowlingReady } from "@/lib/bowlingTransition";
 import Alley from "./Alley";
 import {
@@ -131,12 +132,12 @@ export default function BowlingPage() {
       <a
         href="/"
         onClick={onNavigate("/")}
-        className="group fixed left-5 top-5 z-30 inline-flex items-center gap-2 rounded-full border border-line bg-void/70 px-4 py-2 text-sm text-ink backdrop-blur-md transition-colors hover:border-bloom/60 sm:left-8 sm:top-8"
+        className="group fixed left-8 top-8 z-30 transition-transform duration-300 hover:-translate-x-0.5 sm:left-11 sm:top-11"
       >
-        <span aria-hidden="true" className="transition-transform duration-300 group-hover:-translate-x-0.5">
-          ←
-        </span>
-        Back to the field
+        <Cloud bodyClassName="inline-flex items-center gap-2 px-2 py-1.5 text-sm font-medium">
+          <span aria-hidden="true">←</span>
+          Back
+        </Cloud>
       </a>
 
       <Scoreboard />
@@ -309,7 +310,7 @@ function Scoreboard() {
     return [m0, m1, m2];
   };
   return (
-    <div className="fixed inset-x-5 top-[4.25rem] z-20 rounded-2xl border border-line bg-void/75 p-2 backdrop-blur-md sm:inset-x-auto sm:right-8 sm:top-8">
+    <div className="fixed inset-x-5 top-[5.75rem] z-20 rounded-2xl border border-line bg-void/75 p-2 backdrop-blur-md sm:inset-x-auto sm:right-8 sm:top-8">
       <div className="flex justify-center">
         {frames.map((fr, f) => {
           const current = f === frame && game.phase !== "over";
@@ -400,8 +401,10 @@ function Hint() {
 const TIP_KEY = "groundhog-bowling:tip-collapsed";
 
 /**
- * The pro tip. Shrinks to a chip rather than closing, so it can be had back;
- * remembers which it was.
+ * The pro tip, as a thought: a small cloud to press, and pressed, two little
+ * bubbles float up off it one after the other and the tip itself is written
+ * in the big cloud they lead to. Pressed again (or its ×), it is put away;
+ * which it was is remembered.
  */
 function ProTip() {
   const touch = useTouch();
@@ -420,55 +423,72 @@ function ProTip() {
       /* private mode: it just will not be remembered */
     }
   };
-
-  if (collapsed) {
-    return (
-      <button
-        type="button"
-        onClick={() => set(false)}
-        className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-bloom/40 bg-void/80 px-4 py-2 text-sm text-bloom backdrop-blur-md transition-colors hover:border-bloom"
-        aria-expanded={false}
-      >
-        <span aria-hidden="true">✦</span> Pro tip
-      </button>
-    );
-  }
+  const open = !collapsed;
+  const kbd = "rounded border border-void/20 bg-void/5 px-1.5 py-0.5 text-xs";
 
   return (
-    <aside
-      className="pointer-events-auto relative w-full max-w-sm rounded-2xl border border-bloom/40 bg-void/85 p-4 pr-11 backdrop-blur-md sm:w-80"
-      aria-label="Pro tip"
-    >
-      <p className="text-[11px] font-medium uppercase tracking-[0.24em] text-bloom">
-        <span aria-hidden="true">✦</span> Pro tip
-      </p>
-      <p className="mt-2 text-sm leading-relaxed text-ink">
-        Your cursor aims the ball. To hook it, hold{" "}
-        <kbd className="rounded border border-line bg-raise px-1.5 py-0.5 text-xs">Shift</kbd> and drag
-        sideways: the arc you draw is the spin, and the further you drag, the harder it breaks.
-      </p>
-      <p className="mt-2 text-sm leading-relaxed text-muted">
-        The dotted line on the lane shows where it'll go. Aim away from the pocket and let the hook
-        bring it back in. Click or press{" "}
-        <kbd className="rounded border border-line bg-raise px-1.5 py-0.5 text-xs">Space</kbd> to bowl.
-      </p>
-      {touch && (
-        <p className="mt-2 text-sm leading-relaxed text-muted">
-          No shift key? Turn on <span className="text-ink">Spin mode</span> and drag to draw the arc;
-          turn it off to aim and tap to bowl.
-        </p>
+    <div className="pointer-events-auto relative z-10 mb-3 mr-3 self-end">
+      {open && (
+        <>
+          {/* The big cloud, with the tip in it. */}
+          <aside
+            aria-label="Pro tip"
+            className="bubble-pop absolute bottom-[9.75rem] right-6 w-[min(18rem,calc(100vw-7rem))] origin-bottom-right"
+            style={{ animationDelay: "0.24s" }}
+          >
+            <Cloud bodyClassName="px-2 py-1 pr-7">
+              <p className="text-[11px] font-medium uppercase tracking-[0.24em] text-void/60">
+                <span aria-hidden="true">✦</span> Pro tip
+              </p>
+              <p className="mt-2 text-sm leading-relaxed">
+                Your cursor aims the ball. To hook it, hold <kbd className={kbd}>Shift</kbd> and drag
+                sideways: the arc you draw is the spin, and the further you drag, the harder it breaks.
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-void/70">
+                The dotted line on the lane shows where it'll go. Aim away from the pocket and let the
+                hook bring it back in. Click or press <kbd className={kbd}>Space</kbd> to bowl.
+              </p>
+              {touch && (
+                <p className="mt-2 text-sm leading-relaxed text-void/70">
+                  No shift key? Turn on <span className="font-medium text-void">Spin mode</span> and drag
+                  to draw the arc; turn it off to aim and tap to bowl.
+                </p>
+              )}
+              <button
+                type="button"
+                onClick={() => set(true)}
+                className="absolute -right-1 -top-1 grid h-7 w-7 place-items-center rounded-full text-void/60 transition-colors hover:bg-void/10 hover:text-void"
+                aria-label="Put the pro tip away"
+              >
+                <span aria-hidden="true" className="text-lg leading-none">
+                  ×
+                </span>
+              </button>
+            </Cloud>
+          </aside>
+          {/* The two little bubbles leading up to it. */}
+          <span
+            aria-hidden="true"
+            className="bubble-pop absolute bottom-[3.6rem] right-[5.2rem] h-3 w-3 rounded-full bg-cloud/90 shadow-[0_4px_10px_rgba(0,0,0,0.3)]"
+          />
+          <span
+            aria-hidden="true"
+            className="bubble-pop absolute bottom-[5.3rem] right-[4rem] h-6 w-6 rounded-full bg-cloud/90 shadow-[0_6px_14px_rgba(0,0,0,0.3)]"
+            style={{ animationDelay: "0.12s" }}
+          />
+        </>
       )}
+      {/* The cloud to press. */}
       <button
         type="button"
-        onClick={() => set(true)}
-        className="absolute right-3 top-3 grid h-7 w-7 place-items-center rounded-full text-muted transition-colors hover:bg-raise hover:text-ink"
-        aria-label="Minimise the pro tip"
-        aria-expanded={true}
+        onClick={() => set(open)}
+        aria-expanded={open}
+        className="block transition-transform duration-200 hover:scale-105"
       >
-        <span aria-hidden="true" className="text-lg leading-none">
-          –
-        </span>
+        <Cloud bodyClassName="inline-flex items-center gap-2 px-2 py-1.5 text-sm font-medium">
+          <span aria-hidden="true">✦</span> Pro tip
+        </Cloud>
       </button>
-    </aside>
+    </div>
   );
 }

@@ -51,9 +51,6 @@ export default function GroundhogMenu() {
         aria-label="Groundhog"
         className="gh-menu absolute bottom-3 left-4 w-64 origin-bottom-left rounded-2xl border border-line bg-void/90 p-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.45)] backdrop-blur-md group-data-[side=left]/gh:left-auto group-data-[side=left]/gh:right-4 group-data-[side=left]/gh:origin-bottom-right"
       >
-        <p className="px-3 pb-1 pt-2 text-[11px] uppercase tracking-[0.2em] text-muted">
-          This groundhog has a lane
-        </p>
         <button
           type="button"
           role="menuitem"

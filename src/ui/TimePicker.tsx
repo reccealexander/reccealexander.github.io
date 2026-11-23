@@ -5,11 +5,24 @@ import { useJourney } from "./useJourney";
 /**
  * Morning, sunset or evening — the light the field is shown in.
  *
- * A three-way switch in the corner opposite the biome picker, in the same
- * shell, and gone over the same stretch of the page: it changes the world
- * behind the copy, and the copy should not have to share the frame with it
- * while it is being read.
+ * A three-way switch in the corner opposite the biome picker, gone over the
+ * same stretch of the page: it changes the world behind the copy, and the copy
+ * should not have to share the frame with it while it is being read.
+ *
+ * Its panel is a piece of the sky it sets — blue going gold in the morning,
+ * plum into orange at sunset, deep indigo in the evening — cross-faded as the
+ * light changes, with the one that is on lit up like the sun or moon in it.
  */
+const SKY: Record<TimeOfDay, string> = {
+  morning: "linear-gradient(150deg, #2f5f80 0%, #6f8f8a 55%, #c99a3e 100%)",
+  sunset: "linear-gradient(150deg, #4a2550 0%, #9a3f4a 55%, #e07a36 100%)",
+  evening: "linear-gradient(150deg, #0b1230 0%, #18245a 60%, #2f3f84 100%)",
+};
+const GLOW: Record<TimeOfDay, string> = {
+  morning: "0 0 14px rgba(255, 214, 120, 0.75)",
+  sunset: "0 0 14px rgba(255, 150, 80, 0.8)",
+  evening: "0 0 14px rgba(170, 190, 255, 0.7)",
+};
 
 function Icon({ id }: { id: TimeOfDay }) {
   const common = {
@@ -74,8 +87,17 @@ export default function TimePicker() {
       role="radiogroup"
       aria-label="Time of day"
       onKeyDown={onKey}
-      className="fixed bottom-4 left-4 z-50 flex items-center gap-0.5 rounded-full border border-line bg-void/70 p-1 shadow-[0_6px_20px_rgba(0,0,0,0.35)] backdrop-blur-md transition-opacity duration-500 sm:bottom-6 sm:left-6"
+      className="fixed bottom-4 left-4 z-50 isolate flex items-center gap-1 overflow-hidden rounded-lg border border-white/15 p-1 text-white shadow-[0_8px_24px_rgba(0,0,0,0.4)] transition-opacity duration-500 sm:bottom-6 sm:left-6"
     >
+      {/* The sky, one layer per time, cross-faded. */}
+      {TIMES.map((t) => (
+        <span
+          key={`sky-${t.id}`}
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10 transition-opacity duration-700"
+          style={{ background: SKY[t.id], opacity: t.id === time ? 1 : 0 }}
+        />
+      ))}
       {TIMES.map((t) => {
         const active = t.id === time;
         return (
@@ -89,13 +111,12 @@ export default function TimePicker() {
             data-time={t.id}
             tabIndex={active ? 0 : -1}
             onClick={() => setTimeOfDay(t.id)}
-            className={`flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-sm transition-colors ${
-              active ? "bg-raise text-bloom" : "text-ink/70 hover:text-ink"
+            className={`grid h-8 w-8 place-items-center rounded-md transition-[background-color,color,box-shadow] duration-300 ${
+              active ? "bg-white/20 text-white ring-1 ring-white/45" : "text-white/60 hover:bg-white/10 hover:text-white"
             }`}
+            style={active ? { boxShadow: GLOW[t.id] } : undefined}
           >
             <Icon id={t.id} />
-            {/* The name of the one that is on; the others are icons. */}
-            {active && <span className="pr-0.5">{t.label}</span>}
           </button>
         );
       })}

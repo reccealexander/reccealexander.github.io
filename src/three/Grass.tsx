@@ -20,6 +20,7 @@ import { BANK_GLSL, BANK_LIGHT_GLSL, NOISE_GLSL, SHORE_LIGHT } from "./pond";
 import { CLUMPS, quality, reducedMotion } from "./quality";
 import { SUNLIGHT_GLSL, SUN_RAMP, SUN_STRENGTH } from "./sunlight";
 import { GROWTH_GLSL, growth } from "./growth";
+import { CLEARING_GLSL, clearing } from "./clearing";
 import { swayGrid } from "./swayGrid";
 import { withFog } from "./uniforms";
 import Wildflowers from "./Wildflowers";
@@ -120,6 +121,7 @@ varying vec3  vWorld;
 ${PART_GLSL}
 ${SUNLIGHT_GLSL}
 ${GROWTH_GLSL}
+${CLEARING_GLSL}
 
 void main() {
   float t = uv.y;
@@ -137,6 +139,8 @@ void main() {
    * blade's arc for free.
    */
   float grow = growAt(uGrow, growStagger(iPos.xz));
+  // The opening clearing: gone back into the ground (three/clearing.ts).
+  grow *= 1.0 - clearingCut(iPos.xz, iShape.x);
   h *= grow;
   halfW *= mix(0.45, 1.0, grow);
   float facing = iShape.z;
@@ -476,6 +480,10 @@ export default function Grass({ biome }: { biome: Biome }) {
         uSunHot: { value: new Color(SUN_RAMP.hot) },
         uWaterSun: { value: new Color(biome.pond?.sun ?? "#000000") },
         uGrow: { value: 1 },
+        uClearOpen: { value: 0 },
+        uClearK: { value: 0 },
+        uClearZ: { value: 0 },
+        uClearHZ: { value: 0 },
       }),
     [biome, wind, sway],
   );
@@ -487,6 +495,10 @@ export default function Grass({ biome }: { biome: Biome }) {
     if (!m) return;
     m.uniforms.uTime.value += dt;
     m.uniforms.uGrow.value = growth();
+    m.uniforms.uClearOpen.value = clearing.open;
+    m.uniforms.uClearK.value = clearing.k;
+    m.uniforms.uClearZ.value = clearing.z;
+    m.uniforms.uClearHZ.value = clearing.hz;
     // The light's colour on the grass, for the time of day.
     highlight("warm", m.uniforms.uSunWarm.value);
     highlight("face", m.uniforms.uSunFace.value);

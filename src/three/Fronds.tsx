@@ -18,6 +18,7 @@ import { CLUMPS, quality, reducedMotion } from "./quality";
 import { swayGrid } from "./swayGrid";
 import { scrollState } from "@/lib/scroll";
 import { GROWTH_GLSL, growth } from "./growth";
+import { CLEARING_GLSL, clearing } from "./clearing";
 import { PART_GLSL, partedAt } from "./parting";
 import { SUNLIGHT_GLSL, SUN_RAMP, SUN_STRENGTH } from "./sunlight";
 import { withFog } from "./uniforms";
@@ -168,6 +169,7 @@ uniform float uSun;        // how much of the pool this biome takes, 0..1
 
 ${PART_GLSL}
 ${GROWTH_GLSL}
+${CLEARING_GLSL}
 ${SUNLIGHT_GLSL}
 
 varying float vTone;
@@ -198,6 +200,8 @@ void main() {
   // entire animation: a half-grown fern is a fern that has unrolled half way,
   // not a picture of one at half size.
   h *= growAt(uGrow, growStagger(iPos.xz));
+  // The opening clearing: gone back into the ground (three/clearing.ts).
+  h *= 1.0 - clearingCut(iPos.xz, iShape.x);
   float facing = iShape.y;
   float curve = iShape.w;
   float woody = iForm.x;
@@ -642,6 +646,10 @@ export default function Fronds({ biome }: { biome: Biome }) {
         uSwayScale: { value: sway.scale },
         uSwayAmp: { value: sway.amplitude },
         uGrow: { value: 1 },
+        uClearOpen: { value: 0 },
+        uClearK: { value: 0 },
+        uClearZ: { value: 0 },
+        uClearHZ: { value: 0 },
         uSun: { value: SUN_STRENGTH[biome.id] ?? 0 },
         uSunWarm: { value: new Color(SUN_RAMP.warm) },
         uSunFace: { value: new Color(SUN_RAMP.face) },
@@ -661,6 +669,10 @@ export default function Fronds({ biome }: { biome: Biome }) {
     if (!m) return;
     m.uniforms.uTime.value += dt;
     m.uniforms.uGrow.value = growth();
+    m.uniforms.uClearOpen.value = clearing.open;
+    m.uniforms.uClearK.value = clearing.k;
+    m.uniforms.uClearZ.value = clearing.z;
+    m.uniforms.uClearHZ.value = clearing.hz;
     m.uniforms.uPart.value = partedAt(scrollState.smooth);
     // Whichever of this and the grass is mounted steps the spring; a forest
     // has no grass, so it falls here.

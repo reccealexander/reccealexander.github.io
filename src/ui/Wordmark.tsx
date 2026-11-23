@@ -25,9 +25,11 @@ import { reducedMotion } from "@/three/quality";
 /*
  * Faces to churn through, and only stock ones.
  *
- * The page loads exactly two families and this animation is over in a second
- * and a half; fetching four more for it would put a network request on the
- * critical path of the first thing anybody sees. These are all resident on
+ * The page is set in a stock face (Trebuchet MS) and loads no fonts at all,
+ * and this animation is over in a second and a half; fetching some for it
+ * would put a network request on the critical path of the first thing anybody
+ * sees. Trebuchet itself is left out, since the churn never shows the final
+ * face. These are all resident on
  * every platform the site runs on, and they are chosen to be as unlike each
  * other as the local set allows — a slab, a grotesque, a mono, a condensed —
  * because what sells the effect is the *difference* between frames.
@@ -38,7 +40,7 @@ const FACES = [
   "'Courier New', ui-monospace, monospace",
   "Verdana, Geneva, sans-serif",
   "'Arial Black', Impact, sans-serif",
-  "'Trebuchet MS', sans-serif",
+  "'Gill Sans', 'Gill Sans MT', Calibri, sans-serif",
   "Palatino, 'Palatino Linotype', serif",
   "ui-monospace, 'SF Mono', Menlo, monospace",
 ];
@@ -49,7 +51,11 @@ const TICK = 55;
 const FIRST_LAND = 420;
 const LAST_LAND = 1500;
 
-export default function Wordmark({ text }: { text: string }) {
+/**
+ * `start` holds it back: until it is true the letters are laid out (and
+ * measured) but not shown, and the moment it turns true they glitch in.
+ */
+export default function Wordmark({ text, start = true }: { text: string; start?: boolean }) {
   const host = useRef<HTMLSpanElement>(null);
 
   /*
@@ -98,6 +104,7 @@ export default function Wordmark({ text }: { text: string }) {
   useEffect(() => {
     const el = host.current;
     if (!el) return;
+    if (!start) return;
     const letters = Array.from(el.querySelectorAll<HTMLElement>("[data-letter]"));
     if (letters.length === 0) return;
 
@@ -123,7 +130,7 @@ export default function Wordmark({ text }: { text: string }) {
       landAt[letter] = FIRST_LAND + (LAST_LAND - FIRST_LAND) * spread;
     });
 
-    const start = performance.now();
+    const t0 = performance.now();
     // A face per letter, stepped rather than redrawn at random every tick: two
     // neighbours landing on the same face for one frame reads as a word, and
     // the eye catches it.
@@ -132,7 +139,7 @@ export default function Wordmark({ text }: { text: string }) {
     let lastTick = 0;
 
     const step = (now: number) => {
-      const t = now - start;
+      const t = now - t0;
       let running = false;
       if (t - lastTick >= TICK) {
         lastTick = t;
@@ -157,12 +164,12 @@ export default function Wordmark({ text }: { text: string }) {
       cancelAnimationFrame(raf);
       for (const span of letters) span.style.fontFamily = "";
     };
-  }, [text]);
+  }, [text, start]);
 
   return (
     // The name is one string to a screen reader and to anyone selecting it; the
     // per-glyph spans are presentational only.
-    <span ref={host} aria-label={text}>
+    <span ref={host} aria-label={text} style={{ visibility: start ? "visible" : "hidden" }}>
       {Array.from(text).map((ch, i) =>
         ch === " " ? (
           // eslint-disable-next-line react/no-array-index-key

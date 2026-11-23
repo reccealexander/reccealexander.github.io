@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { BIOMES, type Biome, type BiomeId } from "@/lib/biomes";
+import { BIOMES, type BiomeId } from "@/lib/biomes";
 import { useBiome } from "./BiomeContext";
 import { useJourney } from "./useJourney";
 
@@ -55,18 +55,6 @@ function Glyph({ id }: { id: BiomeId }) {
       <path d="M8.2 7.6 5 5.5v4.2z" />
       <path d="M3 13.4c1.2-1 2.1-1 3.3 0s2.1 1 3.3 0 2.1-1 3.3 0 2.1 1 3.3 0M3 16.4c1.2-1 2.1-1 3.3 0s2.1 1 3.3 0 2.1-1 3.3 0 2.1 1 3.3 0" />
     </svg>
-  );
-}
-
-function Swatch({ biome }: { biome: Biome }) {
-  return (
-    <span
-      aria-hidden
-      className="h-7 w-7 shrink-0 rounded-md border border-line"
-      style={{
-        background: `linear-gradient(140deg, ${biome.swatch[0]} 0%, ${biome.swatch[0]} 55%, ${biome.swatch[1]} 55%, ${biome.swatch[1]} 100%)`,
-      }}
-    />
   );
 }
 
@@ -141,7 +129,7 @@ export default function BiomePicker() {
           role="menu"
           aria-label="Biome"
           onKeyDown={onMenuKey}
-          className="absolute bottom-full right-0 mb-2 w-[17.5rem] origin-bottom-right overflow-hidden rounded-xl border border-line bg-void/90 shadow-[0_18px_40px_rgba(0,0,0,0.5)] backdrop-blur-md [animation:biome-menu-in_160ms_cubic-bezier(0.2,0.9,0.3,1)]"
+          className="absolute bottom-full right-0 mb-2 w-[13rem] origin-bottom-right overflow-hidden rounded-lg border border-line bg-void/90 shadow-[0_18px_40px_rgba(0,0,0,0.5)] backdrop-blur-md [animation:biome-menu-in_160ms_cubic-bezier(0.2,0.9,0.3,1)]"
         >
           <p className="px-3.5 pb-1.5 pt-3 text-[0.625rem] uppercase tracking-[0.2em] text-muted">
             Biome
@@ -162,12 +150,8 @@ export default function BiomePicker() {
                   active ? "bg-raise" : "hover:bg-shell focus-visible:bg-shell"
                 }`}
               >
-                <Swatch biome={b} />
-                <span className="min-w-0 flex-1">
-                  <span className={`block text-sm ${active ? "text-ink" : "text-ink/85"}`}>
-                    {b.label}
-                  </span>
-                  <span className="block text-xs text-muted">{b.blurb}</span>
+                <span className={`min-w-0 flex-1 text-sm ${active ? "text-ink" : "text-ink/85"}`}>
+                  {b.label}
                 </span>
                 <span
                   aria-hidden="true"
@@ -188,15 +172,23 @@ export default function BiomePicker() {
         aria-expanded={open}
         aria-label={`Biome: ${biome.label}`}
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2.5 rounded-full border border-line bg-void/70 py-2 pl-3 pr-2.5 text-sm text-ink/90 shadow-[0_6px_20px_rgba(0,0,0,0.35)] backdrop-blur-md transition-colors hover:border-bloom/50 hover:text-ink"
+        // The button is a patch of the biome itself: its ground going into
+        // what grows on it, the swatch's two colours, darkened for the type.
+        className="flex items-center gap-2.5 rounded-lg border border-white/15 py-1.5 pl-2.5 pr-2 text-white shadow-[0_8px_24px_rgba(0,0,0,0.4)] transition-[background,border-color] duration-500 hover:border-white/40"
+        style={{
+          background: `linear-gradient(rgba(0,0,0,0.28), rgba(0,0,0,0.38)), linear-gradient(140deg, ${biome.swatch[0]} 0%, ${biome.swatch[0]} 45%, ${biome.swatch[1]} 130%)`,
+        }}
       >
-        <span className="text-bloom">
+        <span className="grid h-7 w-7 place-items-center rounded-md bg-white/15 ring-1 ring-white/25">
           <Glyph id={biome.id} />
         </span>
-        <span className="max-w-[9rem] truncate">{biome.label}</span>
+        <span className="flex flex-col items-start leading-tight [text-shadow:0_1px_2px_rgba(0,0,0,0.45)]">
+          <span className="text-[0.6rem] uppercase tracking-[0.18em] text-white/70">Biome</span>
+          <span className="max-w-[9rem] truncate text-[0.85rem] font-medium">{biome.label}</span>
+        </span>
         <svg
           viewBox="0 0 20 20"
-          className={`h-3.5 w-3.5 text-muted transition-transform duration-200 ${
+          className={`ml-0.5 h-3.5 w-3.5 text-white/70 transition-transform duration-200 ${
             open ? "rotate-180" : ""
           }`}
           fill="none"

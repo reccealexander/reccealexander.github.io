@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { Color, DoubleSide } from "three";
 import type { Biome } from "@/lib/biomes";
 import { highlight } from "@/lib/timeOfDay";
+import { CLEARING_GLSL, clearing } from "./clearing";
 import { FLOWER } from "@/lib/flowerLayout";
 import { COLOR, HEX } from "@/lib/palette";
 import { withFog } from "./uniforms";
@@ -105,6 +106,7 @@ varying float vMound;
 
 ${SOIL_GLSL}
 ${SUNLIGHT_GLSL}
+${CLEARING_GLSL}
 
 void main() {
   // In a pond biome the soil is a bank, and the bank ends. Cutting it here
@@ -273,6 +275,17 @@ void main() {
   // standing on it.
   out_ = mix(out_, mix(uSunWarm * 0.62, out_, 0.35), sunPool(vWorld.xz) * uSunPool * 0.8);
 
+  // The opening clearing: where the field has gone back into the ground, bare
+  // dirt — the soil's own browns, grained, lit by the same term as the rest
+  // of the floor (three/clearing.ts).
+  float cleared = clearingAt(vWorld.xz);
+  if (cleared > 0.0) {
+    float grain = fract(sin(dot(floor(vWorld.xz * 55.0), vec2(12.9898, 78.233))) * 43758.5453);
+    float clod = fract(sin(dot(floor(vWorld.xz * 9.0), vec2(39.346, 11.135))) * 24634.6345);
+    vec3 dirt = mix(uSoilDark, uSoilLit, 0.3 + 0.35 * grain + 0.2 * clod);
+    out_ = mix(out_, dirt * (0.55 + 0.75 * lit), cleared);
+  }
+
   // The last hand's width before the water is saturated mud, and wet ground is
   // darker than dry. Without it the bank ends on a hard bright line and the
   // pond reads as a hole cut in a lawn.
@@ -350,6 +363,10 @@ export default function Ground({ biome }: { biome: Biome }) {
       uSun: { value: new Color(COLOR.sun) },
       uSunWarm: { value: new Color(SUN_RAMP.warm) },
       uSunPool: { value: SUN_STRENGTH[biome.id] ?? 0 },
+      uClearOpen: { value: 0 },
+      uClearK: { value: 0 },
+      uClearZ: { value: 0 },
+      uClearHZ: { value: 0 },
       uPond: { value: biome.pond ? 1 : 0 },
     };
   }, [biome]);
@@ -358,6 +375,10 @@ export default function Ground({ biome }: { biome: Biome }) {
   // materials share these uniform objects, so one update reaches both.
   useFrame(() => {
     highlight("warm", common.uSunWarm.value);
+    common.uClearOpen.value = clearing.open;
+    common.uClearK.value = clearing.k;
+    common.uClearZ.value = clearing.z;
+    common.uClearHZ.value = clearing.hz;
   });
 
   const flat = useMemo(() => withFog({ ...common, uRelief: { value: 0 } }), [common]);

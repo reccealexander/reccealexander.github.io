@@ -1,5 +1,5 @@
 import { Suspense, useEffect } from "react";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { Bloom, EffectComposer, Vignette } from "@react-three/postprocessing";
 import { ACESFilmicToneMapping, UnsignedByteType } from "three";
 import { BIOMES } from "@/lib/biomes";
@@ -15,6 +15,8 @@ import Grass from "./Grass";
 import Groundhog from "./Groundhog";
 import Fireflies from "./Fireflies";
 import { TimeGrade } from "./TimeGrade";
+import { stepClearing } from "./clearing";
+import { scrollState } from "@/lib/scroll";
 import Ground from "./Ground";
 import Heads from "./Heads";
 import Litter from "./Litter";
@@ -95,6 +97,8 @@ export default function Scene() {
           )}
           <Heads key={`h-${biome.id}`} biome={biome} />
           <Flower biome={biome} />
+          {/* The opening clearing's clock — three/clearing.ts. */}
+          <ClearingClock />
           <Ant />
           {/* Pops up in the field the page ends on; not at the pond, where a
               burrow could open in the water. */}
@@ -151,4 +155,9 @@ export default function Scene() {
       </Canvas>
     </div>
   );
+}
+
+function ClearingClock() {
+  useFrame(({ clock, size }) => stepClearing(clock.elapsedTime, scrollState.smooth, size.width / size.height));
+  return null;
 }

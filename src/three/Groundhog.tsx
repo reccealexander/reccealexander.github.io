@@ -27,6 +27,7 @@ import { scrollState } from "@/lib/scroll";
 import { closeGroundhogMenu, groundhogMenu, openGroundhogMenu, placeGroundhogMenu } from "@/lib/groundhogMenu";
 import { SOIL } from "./soil";
 import { swayGrid } from "./swayGrid";
+import { clearing, clearingDistance } from "./clearing";
 import { reducedMotion } from "./quality";
 
 /**
@@ -48,7 +49,7 @@ import { reducedMotion } from "./quality";
  *
  * In the field the page opens on and the one it ends on — the same shot — and
  * not at the pond, where a burrow could open in the water. At the opening it
- * waits for the leaf to land first, and keeps out from behind it.
+ * comes up while the clearing opens, and keeps off the name on it.
  */
 
 /* ---------------------------------------------------------------- fur */
@@ -397,12 +398,14 @@ const Z_AXIS = new Vector3(0, 0, 1);
     the page — the camera is in the same place for both. */
 const UNTIL_CHAPTER = 0.3;
 const FROM_CHAPTER = 5.38;
-/** The first time, on opening: soon — while the leaf is still flying in, so
-    it keeps out of where the leaf is going to land as well as where it is. */
+/** The first time, on opening: soon, while the clearing is opening. */
 const FIRST_WAIT = 1.8;
-/** If no clear spot has turned up this long after it was due, take any spot
-    in frame: the first appearance must not stall on a crowded screen. */
-const GIVE_UP_AVOIDING = 1;
+/** How far from the clearing's edge it keeps — its body and the soft rim of
+    shortened grass, so it is always standing in grass, never on the dirt. */
+const OFF_CLEARING = 0.28;
+/** While the page is near the opening shot the clearing is there, or about to
+    be: the groundhog keeps off where it will be, not only where it is yet. */
+const CLEARING_UNTIL = 0.6;
 const RISE = 0.55;
 const DUCK = 0.28;
 /** Touched by the cursor: a flinch on the spot, not a retreat — it has to
@@ -467,6 +470,9 @@ export default function Groundhog() {
       grab: false,
       press: null as null | { x: number; y: number },
       released: false,
+      // Set down by the reader rather than come up by itself: then it may stay
+      // on the clearing, name and all, where it would never choose to surface.
+      placed: false,
       // When the press that picked it up went down, and where it was standing
       // — so a click can put it back.
       downAt: 0,
@@ -482,6 +488,8 @@ export default function Groundhog() {
       swingVX: 0,
       swingVZ: 0,
       cursorSet: false,
+      // Whether it is cut out of the text just now (see the end of the frame).
+      masked: null as HTMLElement | null,
       paddle: [0, 0],
       turn: new Quaternion(),
       turn2: new Quaternion(),
@@ -557,78 +565,39 @@ export default function Groundhog() {
       window.removeEventListener("blur", letGo);
       window.removeEventListener("touchmove", touch, opts);
       if (s.cursorSet) document.body.style.cursor = "";
+      if (s.masked) s.masked.style.maskImage = s.masked.style.webkitMaskImage = "";
     };
   }, [state]);
 
   /** A spot in frame, clear of the plant, or null if none turned up. */
-  const pickSpot = (camera: Camera, opening: boolean, avoidLeaf: boolean) => {
-    // At the opening the middle of the frame is the leaf's, with the name on
-    // it; find where it actually is on this screen (it scales with the
-    // viewport, and once it has been sent off there is nothing to avoid).
-    let leaf: { x0: number; x1: number; y0: number; y1: number } | null = null;
-    if (opening && avoidLeaf) {
-      const el = document.querySelector<HTMLElement>('button[aria-label="Send the leaf off"]');
-      const name = document.querySelector<HTMLElement>("#top h1");
-      if (el && el.style.visibility !== "hidden") {
-        // Where it is now (it may still be flying in) and where it will rest:
-        // centred on the name, at its own size.
-        const r = el.getBoundingClientRect();
-        let left = r.left;
-        let right = r.right;
-        let top = r.top;
-        let bottom = r.bottom;
-        if (name) {
-          const n = name.getBoundingClientRect();
-          const cx = (n.left + n.right) / 2;
-          const cy = (n.top + n.bottom) / 2;
-          left = Math.min(left, cx - el.offsetWidth * 0.55);
-          right = Math.max(right, cx + el.offsetWidth * 0.55);
-          top = Math.min(top, cy - el.offsetHeight * 0.55);
-          bottom = Math.max(bottom, cy + el.offsetHeight * 0.6);
-        }
-        const pad = 0.04;
-        leaf = {
-          x0: (left / window.innerWidth) * 2 - 1 - pad,
-          x1: (right / window.innerWidth) * 2 - 1 + pad,
-          y0: 1 - (bottom / window.innerHeight) * 2 - pad,
-          y1: 1 - (top / window.innerHeight) * 2 + pad,
-        };
-      }
-    }
-    const card = cardBox();
-    // With the card up, the field left to it is the strips at the edges of the
-    // screen: reach for those, across more of the ground, and closer to the
-    // frame's edge than it otherwise would.
-    const reachX = card ? 2.5 : 1.7;
-    // Its middle this far in, so the whole animal is on screen, not half of it.
-    const edgeX = card ? 0.86 : 0.72;
-    const edgeTop = card ? 0.86 : 0.6;
-    const edgeBottom = card ? -0.86 : -0.72;
-    for (let k = 0; k < (card ? 48 : 24); k++) {
-      const x = -reachX + Math.random() * reachX * 2;
-      const z = card ? -3.4 + Math.random() * 3.9 : -2.7 + Math.random() * 3.0;
+  /** A spot in frame, clear of the plant and of the name, or null. */
+  const pickSpot = (camera: Camera) => {
+    const title = titleBox();
+    for (let k = 0; k < 32; k++) {
+      const x = -1.9 + Math.random() * 3.8;
+      const z = -2.8 + Math.random() * 3.2;
       if (Math.hypot(x - FLOWER.x, z - FLOWER.z) < 0.5) continue;
       // Its head, not its feet, has to be on screen — and well inside the edge
       // on a narrow phone frame as much as a wide one.
       state.probe.set(x, SOIL.bed + 0.5 * SIZE, z).project(camera);
-      if (Math.abs(state.probe.x) > edgeX || state.probe.y < edgeBottom || state.probe.y > edgeTop) continue;
-      if (leaf && overLeaf(camera, x, z, leaf)) continue;
-      // The card is never relaxed: behind it, it could not be seen at all.
-      if (card && overLeaf(camera, x, z, card)) continue;
+      if (Math.abs(state.probe.x) > 0.78 || state.probe.y < -0.74 || state.probe.y > 0.66) continue;
+      if (title && overBox(camera, x, z, title)) continue;
+      // On the grass, never in the clearing.
+      if (scrollState.smooth <= CLEARING_UNTIL && clearingDistance(x, z) < OFF_CLEARING) continue;
       return state.spot.set(x, SOIL.bed, z);
     }
     return null;
   };
 
   /**
-   * The leaf come back as a card in the middle of the screen (ui/Hero.tsx),
-   * as a box in screen units — or null if it is not there. While it is, the
-   * groundhog only lives in what is left of the field either side: it does not
-   * come up behind it, and cannot be carried behind it.
+   * The name and the room under it, on the opening clearing (ui/Hero.tsx), as
+   * a box in screen units — or null once the page has moved on from the
+   * opening shot. The groundhog keeps off it: it does not come up on it and
+   * cannot be carried onto it, so the name is always there to be read.
    */
-  const cardBox = () => {
+  const titleBox = () => {
     if (scrollState.smooth > UNTIL_CHAPTER) return null;
-    const el = document.querySelector<HTMLElement>("[data-leaf-panel]");
+    const el = document.querySelector<HTMLElement>("[data-hero-title]");
     if (!el) return null;
     const r = el.getBoundingClientRect();
     if (r.width === 0) return null;
@@ -641,19 +610,19 @@ export default function Groundhog() {
     };
   };
 
-  /** Whether the animal standing at (x, z) would be drawn over the leaf. */
-  const overLeaf = (
+  /** Whether the animal standing at (x, z) would be drawn over a box. */
+  const overBox = (
     camera: Camera,
     x: number,
     z: number,
-    leaf: { x0: number; x1: number; y0: number; y1: number },
+    box: { x0: number; x1: number; y0: number; y1: number },
   ) => {
     const head = state.probe.set(x, SOIL.bed + 0.62 * SIZE, z).project(camera);
     const hx = head.x;
     const hy = head.y;
     const foot = state.probe.set(x, SOIL.bed + 0.05, z).project(camera);
     const half = Math.abs(hx - foot.x) + 0.1;
-    return hx + half > leaf.x0 && hx - half < leaf.x1 && hy > leaf.y0 && foot.y < leaf.y1;
+    return hx + half > box.x0 && hx - half < box.x1 && hy > box.y0 && foot.y < box.y1;
   };
 
   useFrame(({ camera, clock }, delta) => {
@@ -722,9 +691,9 @@ export default function Groundhog() {
     }
 
     if (s.phase === "hidden" && atEnd) {
-      const overdue = now - s.t0 - s.wait;
-      if (overdue > 0 && pickSpot(camera, opening, overdue < GIVE_UP_AVOIDING)) {
+      if (now - s.t0 > s.wait && pickSpot(camera)) {
         begin("rise");
+        s.placed = false;
         s.look = 2.4 + Math.random() * 2.4;
         s.blinkAt = now + 0.8 + Math.random();
         s.seed = Math.random() * 100;
@@ -753,6 +722,7 @@ export default function Groundhog() {
           openGroundhogMenu();
         } else {
           begin("fall");
+          s.placed = true;
         }
       }
     } else if (over && !s.hovering && (s.phase === "look" || s.phase === "rise")) {
@@ -762,11 +732,13 @@ export default function Groundhog() {
     } else if (s.phase === "flinch" && now - s.t0 > FLINCH) {
       begin("look");
       s.look = Math.max(s.look, 2.5);
-    } else if (s.phase === "look" && !s.grab && (() => {
-      const card = cardBox();
-      return !!card && overLeaf(camera, g.position.x, g.position.z, card);
+    } else if (s.phase === "look" && !s.grab && !s.placed && (() => {
+      const title = titleBox();
+      if (title && overBox(camera, g.position.x, g.position.z, title)) return true;
+      // The clearing has opened out to where it stands.
+      return clearingDistance(g.position.x, g.position.z, clearing.open) < OFF_CLEARING * 0.5;
     })()) {
-      // The card has come down over it: gone, to come up somewhere it can be seen.
+      // On the name or the dirt: gone, to come up somewhere on the grass.
       closeGroundhogMenu();
       begin("duck");
     } else if (s.phase === "look" && now - s.t0 > s.look && !over && !groundhogMenu.open) {
@@ -807,24 +779,8 @@ export default function Groundhog() {
         const keep = 0.3;
         g.position.x = fd < keep ? FLOWER.x + (fx / (fd || 1)) * keep : x;
         g.position.z = fd < keep ? FLOWER.z + (fz / (fd || 1)) * keep : z;
-        // Not behind the card: out to whichever side of it is nearer.
-        const card = cardBox();
-        if (card && overLeaf(camera, g.position.x, g.position.z, card)) {
-          const x0 = g.position.x;
-          for (let step = 1; step <= 80; step++) {
-            const d = step * 0.04;
-            const l = x0 - d;
-            const r = x0 + d;
-            if (l >= BOUNDS.minX && !overLeaf(camera, l, g.position.z, card)) {
-              g.position.x = l;
-              break;
-            }
-            if (r <= BOUNDS.maxX && !overLeaf(camera, r, g.position.z, card)) {
-              g.position.x = r;
-              break;
-            }
-          }
-        }
+        // Over the name and the bare clearing too: it can be carried
+        // anywhere on the ground.
       }
     } else if (s.phase === "fall") {
       const u = Math.min(1, (now - s.t0) / FALL);
@@ -979,6 +935,49 @@ export default function Groundhog() {
     if (now > s.blinkAt + 0.12) s.blinkAt = now + 1.4 + Math.random() * 2.2;
     const blink = !alarmed && now > s.blinkAt ? 0.12 : 1;
     for (const eye of eyes.current) eye?.scale.set(s.wide, s.wide * blink, s.wide);
+
+    /*
+     * In front of the name and the description. The scene is drawn behind the
+     * page, so carried over the text it would show through it; instead an
+     * ellipse the size of its body on screen is cut out of the text, and the
+     * text reads as being behind it.
+     */
+    const text = scrollState.smooth <= UNTIL_CHAPTER ? document.querySelector<HTMLElement>("[data-hero-title]") : null;
+    let mask = "";
+    if (text && hull.current && s.phase !== "hidden") {
+      // The extent of its body on screen, off a scatter of the body's points.
+      hull.current.updateWorldMatrix(true, false);
+      const world = hull.current.matrixWorld;
+      const verts = BODY.attributes.position;
+      const every = Math.max(1, Math.floor(verts.count / 240));
+      let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+      for (let i = 0; i < verts.count; i += every) {
+        const p = state.probe.fromBufferAttribute(verts, i).applyMatrix4(world);
+        if (p.y < SOIL.bed) continue;
+        p.project(camera);
+        x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x);
+        y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y);
+      }
+      const r = text.getBoundingClientRect();
+      const W = window.innerWidth;
+      const H = window.innerHeight;
+      const left = ((x0 + 1) / 2) * W, right = ((x1 + 1) / 2) * W;
+      const top = ((1 - y1) / 2) * H, bottom = ((1 - y0) / 2) * H;
+      if (right > r.left && left < r.right && bottom > r.top && top < r.bottom && bottom - top > 2) {
+        const rx = ((right - left) / 2) * 1.04;
+        const ry = ((bottom - top) / 2) * 1.02;
+        const cx = (left + right) / 2 - r.left;
+        const cy = (top + bottom) / 2 - r.top;
+        mask = `radial-gradient(${rx.toFixed(1)}px ${ry.toFixed(1)}px at ${cx.toFixed(1)}px ${cy.toFixed(1)}px, transparent 96%, #000 100%)`;
+      }
+    }
+    if (mask) {
+      text!.style.maskImage = text!.style.webkitMaskImage = mask;
+      s.masked = text;
+    } else if (s.masked) {
+      s.masked.style.maskImage = s.masked.style.webkitMaskImage = "";
+      s.masked = null;
+    }
   });
 
   const fur = M_FUR as Material;

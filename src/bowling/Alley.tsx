@@ -176,7 +176,7 @@ function signTexture() {
   // Drawn once straight away in whatever font is to hand, and again once the
   // display face has arrived.
   document.fonts
-    ?.load("italic 700 150px 'Playfair Display'")
+    ?.load("italic 700 150px 'Trebuchet MS'")
     .then(() => {
       drawSign((t.image as HTMLCanvasElement).getContext("2d")!);
       t.needsUpdate = true;
@@ -190,7 +190,7 @@ function drawSign(g: CanvasRenderingContext2D) {
   g.fillRect(0, 0, 2048, 320);
   g.textAlign = "center";
   g.textBaseline = "middle";
-  g.font = "italic 700 150px 'Playfair Display', Georgia, serif";
+  g.font = "italic 700 150px 'Trebuchet MS', 'Lucida Grande', sans-serif";
   g.shadowColor = "#f2c744";
   g.shadowBlur = 40;
   g.fillStyle = "#f2c744";

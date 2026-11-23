@@ -24,9 +24,12 @@ export const contact = {
  */
 export const hero = {
   wordmark: "Alexander Recce",
-  /**
-   * What the leaf says under the name once it has been sent off and come back
-   * to the middle of the screen. Empty for now; the space for it is kept.
-   */
-  description: "",
+  /** The paragraphs under the name, on the clearing. */
+  description: [
+    "I study physics at Caltech, and am interested in condensed matter research, particularly on atomically thin materials. In the Hone Group at Columbia, I stacked TMDs into moiré and nonlinear-optical structures up to 5 monolayers in thickness and developed a computer vision pipeline for evaluating crystal quality; with the Yeh Group, I grew graphene using PECVD for strain-engineered devices. In the past, I've conducted personal computational projects in studying graphene nanoribbons and adjoint data assimilation for NLPDEs.",
+    "I also enjoy running mid-distance (800-meter) for the Caltech track and field team, playing guitar, and drawing.",
+  ],
+  /** Where to find me, under it. */
+  linkedin: "https://www.linkedin.com/in/alexander-recce-27344b31a",
+  email: "arecce@caltech.edu",
 } as const;

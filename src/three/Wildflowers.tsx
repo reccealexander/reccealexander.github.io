@@ -16,6 +16,7 @@ import { highlight, nightness } from "@/lib/timeOfDay";
 import { makeRandom } from "@/lib/math";
 import { plantWildflowers } from "./field";
 import { GROWTH_GLSL, growth } from "./growth";
+import { CLEARING_GLSL, clearing } from "./clearing";
 import { quality, reducedMotion } from "./quality";
 import { sunPool, SUN_RAMP, SUN_STRENGTH } from "./sunlight";
 import {
@@ -211,6 +212,7 @@ varying vec3  vEye;
 
 ${STALK_GLSL}
 ${GROWTH_GLSL}
+${CLEARING_GLSL}
 
 /**
  * One branch's shape, from its index alone.
@@ -249,6 +251,8 @@ void main() {
    * growing but a plant being winched up.
    */
   float grow = growAt(uGrow, growStagger(iPos.xz));
+  // The opening clearing: gone back into the ground (three/clearing.ts).
+  grow *= 1.0 - clearingCut(iPos.xz, iShape.x);
   float h = iShape.x * grow;
   float r = iShape.y * smoothstep(0.15, 1.0, grow);
   float phase = iShape.z;
@@ -686,6 +690,10 @@ export default function Wildflowers({ biome }: { biome: Biome }) {
         uSwayScale: { value: sway.scale },
         uSwayAmp: { value: sway.amplitude },
         uGrow: { value: 1 },
+        uClearOpen: { value: 0 },
+        uClearK: { value: 0 },
+        uClearZ: { value: 0 },
+        uClearHZ: { value: 0 },
         uNight: { value: 0 },
         uStem: { value: new Color(biome.wildflowers?.stem ?? "#1e4028") },
         uLeaf: { value: new Color(biome.wildflowers?.leaf ?? "#254a2d") },
@@ -699,6 +707,10 @@ export default function Wildflowers({ biome }: { biome: Biome }) {
     if (!material.current) return;
     material.current.uniforms.uTime.value += dt;
     material.current.uniforms.uGrow.value = growth();
+    material.current.uniforms.uClearOpen.value = clearing.open;
+    material.current.uniforms.uClearK.value = clearing.k;
+    material.current.uniforms.uClearZ.value = clearing.z;
+    material.current.uniforms.uClearHZ.value = clearing.hz;
     material.current.uniforms.uNight.value = nightness();
     highlight("warm", material.current.uniforms.uSunWarm.value);
     highlight("face", material.current.uniforms.uSunFace.value);
