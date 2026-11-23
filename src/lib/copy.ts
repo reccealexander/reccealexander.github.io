@@ -11,7 +11,6 @@ export const contact = {
   phoneHref: "tel:+19088735639",
   linkedin: "linkedin.com/in/alexanderrecce",
   linkedinHref: "https://www.linkedin.com/in/alexanderrecce",
-  resumeHref: "/AlexanderRecce_Resume.pdf",
 } as const;
 
 /**

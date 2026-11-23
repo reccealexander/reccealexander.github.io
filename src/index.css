@@ -18,8 +18,6 @@
      orange and is reserved for the product. */
   --color-bloom: #f2c744;
   --color-ember: #e4813f;
-  /* The bowling alley's clouds: the thought bubble and the way back. */
-  --color-cloud: #f6f1e7;
 
   --font-display: "Trebuchet MS", "Lucida Grande", "Lucida Sans Unicode", sans-serif;
   --font-sans: "Trebuchet MS", "Lucida Grande", "Lucida Sans Unicode", sans-serif;
@@ -331,46 +329,3 @@ section[id] {
   }
 }
 
-/* The groundhog's menu, grown out of its body. */
-@keyframes gh-menu {
-  from {
-    opacity: 0;
-    transform: scale(0.6);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-.gh-menu {
-  animation: gh-menu 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
-}
-@media (prefers-reduced-motion: reduce) {
-  .gh-menu {
-    animation: none;
-  }
-}
-
-/* A thought bubble forming: each puff of it pops in after the last. */
-@keyframes bubble-pop {
-  0% {
-    opacity: 0;
-    transform: scale(0.2);
-  }
-  70% {
-    opacity: 1;
-    transform: scale(1.08);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-.bubble-pop {
-  animation: bubble-pop 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
-}
-@media (prefers-reduced-motion: reduce) {
-  .bubble-pop {
-    animation: none;
-  }
-}
