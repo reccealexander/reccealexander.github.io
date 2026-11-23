@@ -31,20 +31,65 @@ const SEAT = { x: P.x + P.size / 2, y: P.y + P.size / 2 };
 const R = 46;
 const discX = (i: number) => RIGHT + R - 14 + i * 14;
 
-function Disc({ x, y, r, colour }: { x: number; y: number; r: number; colour: string }) {
+/** A ring segment of a disc, from radius r0 to r1, between two angles (deg). */
+function wedge(x: number, y: number, r0: number, r1: number, a0: number, a1: number) {
+  const p = (r: number, a: number) => {
+    const t = (a * Math.PI) / 180;
+    return `${(x + r * Math.cos(t)).toFixed(2)},${(y + r * Math.sin(t)).toFixed(2)}`;
+  };
+  return `M${p(r0, a0)} L${p(r1, a0)} A${r1},${r1} 0 0 1 ${p(r1, a1)} L${p(r0, a1)} A${r0},${r0} 0 0 0 ${p(r0, a0)}Z`;
+}
+
+/** The spectrum a disc throws back, twice round, blended smoothly between
+    these stops — soft, so the silver shows through. */
+const STOPS = [
+  [255, 138, 138],
+  [255, 196, 107],
+  [255, 240, 122],
+  [139, 232, 160],
+  [124, 200, 255],
+  [180, 156, 255],
+];
+const SLICES = 72;
+const SPECTRUM = Array.from({ length: SLICES }, (_, k) => {
+  const t = ((k / SLICES) * 2 * STOPS.length) % STOPS.length;
+  const a = STOPS[Math.floor(t)];
+  const b = STOPS[(Math.floor(t) + 1) % STOPS.length];
+  const f = t - Math.floor(t);
+  return `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * f)).join(" ")})`;
+});
+
+function Disc({ x, y, r, colour, turn = 0 }: { x: number; y: number; r: number; colour: string; turn?: number }) {
+  const inner = r * 0.38;
+  const n = SLICES;
   return (
     <>
-      <circle cx={x} cy={y} r={r} fill={colour} stroke={INK} strokeWidth={2.2} />
-      {/* A faint sheen across it. */}
+      <circle cx={x} cy={y} r={r} fill={colour} />
+      {/* The rainbow, in soft sectors round the shiny part. */}
+      {Array.from({ length: n }, (_, k) => (
+        <path
+          key={k}
+          d={wedge(x, y, inner, r, turn + (k * 360) / n, turn + ((k + 1) * 360) / n + 1.6)}
+          fill={SPECTRUM[k]}
+          fillOpacity={0.4}
+        />
+      ))}
+      {/* A gloss over it all: bright near the middle and at the rim. */}
+      <circle cx={x} cy={y} r={r} fill="url(#cd-shine)" />
+      {/* Two bright flashes where the light catches it, opposite each other. */}
+      <path d={wedge(x, y, inner, r, turn + 34, turn + 50)} fill="#fff" fillOpacity={0.5} />
+      <path d={wedge(x, y, inner, r, turn + 214, turn + 230)} fill="#fff" fillOpacity={0.35} />
+      {/* A glint across the top. */}
       <path
         d={`M${x - r * 0.62},${y - r * 0.5} A${r * 0.8},${r * 0.8} 0 0 1 ${x + r * 0.15},${y - r * 0.78}`}
         fill="none"
         stroke="#fff"
-        strokeOpacity={0.75}
+        strokeOpacity={0.8}
         strokeWidth={2.2}
         strokeLinecap="round"
       />
-      <circle cx={x} cy={y} r={r * 0.38} fill="#f2eee6" stroke={INK} strokeWidth={1.6} />
+      <circle cx={x} cy={y} r={r} fill="none" stroke={INK} strokeWidth={2.2} />
+      <circle cx={x} cy={y} r={inner} fill="#f2eee6" stroke={INK} strokeWidth={1.6} />
       <circle cx={x} cy={y} r={r * 0.12} fill={INK} />
     </>
   );
@@ -124,7 +169,7 @@ export default function CdPlayer({
           >
             {/* Turning, once it is in. */}
             <g className={inside ? "cd-spin cd-spin-late" : undefined}>
-              <Disc x={discX(i)} y={SEAT.y} r={R} colour={DISC[i % DISC.length]} />
+              <Disc x={discX(i)} y={SEAT.y} r={R} colour={DISC[i % DISC.length]} turn={i * 23} />
             </g>
           </g>
         );
@@ -149,6 +194,12 @@ export default function CdPlayer({
       <rect x={P.x} y={LID_BOTTOM} width={P.size} height={BOTTOM - LID_BOTTOM} fill="url(#cd-copper)" />
       {/* The display: amber on near-black, in a terminal face, glowing. */}
       <defs>
+        <radialGradient id="cd-shine">
+          <stop offset="0.38" stopColor="#fff" stopOpacity={0.45} />
+          <stop offset="0.62" stopColor="#fff" stopOpacity={0} />
+          <stop offset="0.9" stopColor="#fff" stopOpacity={0.1} />
+          <stop offset="1" stopColor="#fff" stopOpacity={0.35} />
+        </radialGradient>
         <filter id="cd-glow" x="-20%" y="-50%" width="140%" height="200%">
           <feGaussianBlur stdDeviation="0.9" result="blur" />
           <feMerge>
