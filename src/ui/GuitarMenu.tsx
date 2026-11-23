@@ -160,7 +160,7 @@ export default function GuitarMenu({ label }: { label: string }) {
           >
             {/* The cloud is sized to the player and the nearest discs; the
                 rest of the row runs on under its edge. */}
-            <Cloud dots="left" pace={PACE} clip bodyClassName="h-[100px] w-[150px]">
+            <Cloud dots="left" pace={PACE} clip bodyClassName="h-[130px] w-[195px]">
               <CdPlayer tracks={guitar} playing={playing} onPlay={play} onStop={stop} />
             </Cloud>
           </span>

@@ -80,7 +80,7 @@ export default function CdPlayer({
   const order = tracks.map((t, i) => ({ t, i })).reverse();
 
   return (
-    <svg viewBox="0 0 268 130" className="absolute left-0 top-0 block h-auto w-[214px] overflow-visible" aria-label="CD player">
+    <svg viewBox="0 0 268 130" className="absolute left-0 top-0 block h-auto w-[278px] overflow-visible" aria-label="CD player">
       {/* The lead: plugged into the side by a jack, coiling away below — and
           ending inside the cloud. */}
       <path
