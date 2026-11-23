@@ -2,15 +2,17 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { guitar } from "@/lib/copy";
 import { setMusicPlaying } from "@/lib/music";
 import Cloud, { DOT_ANCHOR } from "./Cloud";
+import CdPlayer from "./CdPlayer";
 
 /**
  * "playing guitar", in the description, with a few recordings behind it.
  *
  * Hovering the phrase (or tapping it, on a phone, or pressing it from the
- * keyboard) opens a small menu just above it; a track in it starts playing
- * and the menu gets out of the way; opened again, the same track stops, back
- * at its start. One plays at a time, through the one audio element, and the
- * menu stays put while the cursor crosses the gap from the phrase to it.
+ * keyboard) bubbles up a cloud above it with a little CD player in it
+ * (ui/CdPlayer): a disc pressed slides in and plays; stopped, it slides back
+ * out and the song goes back to its start. One plays at a time, through the
+ * one audio element, and the cloud stays put while the cursor crosses the gap
+ * from the phrase to it.
  * While anything plays, notes drift over the field (ui/MusicNotes).
  */
 /** The guitar menu bubbles up more slowly than the others: more of a thought. */
@@ -97,33 +99,32 @@ export default function GuitarMenu({ label }: { label: string }) {
     closeAt.current = window.setTimeout(() => setOpen(false), 220);
   };
 
-  const play = (id: string, src: string) => {
+  // Stopped: the disc comes back out, and the song goes back to its start.
+  const stop = () => {
     const a = audio.current;
-    if (!a) return;
-    if (playing === id) {
-      // Paused, it goes back to the top: played again, it starts over.
+    if (a) {
       a.pause();
       a.currentTime = 0;
-      setPlaying(null);
-      setMusicPlaying(false);
-      return;
     }
-    if (!a.src.endsWith(src)) {
-      a.src = src;
-    }
+    setPlaying(null);
+    setMusicPlaying(false);
+  };
+
+  const play = (id: string) => {
+    const a = audio.current;
+    const track = guitar.find((t) => t.id === id);
+    if (!a || !track) return;
+    // The disc goes in straight away; the sound follows when it has loaded.
+    setPlaying(id);
+    if (!a.src.endsWith(track.src)) a.src = track.src;
+    a.currentTime = 0;
     a.play().then(
-      () => {
-        setPlaying(id);
-        setMusicPlaying(true);
-      },
+      () => setMusicPlaying(true),
       () => {
         setPlaying(null);
         setMusicPlaying(false);
       },
     );
-    // Started: the menu has done its job.
-    window.clearTimeout(closeAt.current);
-    setOpen(false);
   };
 
   return (
@@ -157,26 +158,8 @@ export default function GuitarMenu({ label }: { label: string }) {
             style={{ transform: `translateX(calc(${-DOT_ANCHOR * 100}% + ${nudge}px))` }}
             className="absolute bottom-full left-1/2 z-20 mb-0.5 block w-max text-left [text-shadow:none]"
           >
-            {/* Just the titles, as rows, in the biome menu's type; the one
-                playing is set bold on a shaded row. */}
-            <Cloud dots="left" pace={PACE} bodyClassName="w-max">
-              {guitar.map((t) => {
-                const on = playing === t.id;
-                return (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => play(t.id, t.src)}
-                    aria-pressed={on}
-                    aria-label={`${on ? "Pause" : "Play"} ${t.title}`}
-                    className={`block w-full whitespace-nowrap rounded-md px-1.5 py-px text-left text-[0.78rem] transition-colors ${
-                      on ? "bg-void/10 font-semibold" : "hover:bg-void/[0.07] focus-visible:bg-void/[0.07]"
-                    }`}
-                  >
-                    {t.title}
-                  </button>
-                );
-              })}
+            <Cloud dots="left" pace={PACE} bodyClassName="">
+              <CdPlayer tracks={guitar} playing={playing} onPlay={play} onStop={stop} />
             </Cloud>
           </span>
         </>
