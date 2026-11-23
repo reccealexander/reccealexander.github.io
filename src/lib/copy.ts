@@ -26,7 +26,7 @@ export const hero = {
   wordmark: "Alexander Recce",
   /** The paragraphs under the name, on the clearing. */
   description: [
-    "I study physics at Caltech, and am interested in condensed matter research, particularly on atomically thin materials. In the Hone Group at Columbia, I stacked TMDs into moiré and nonlinear-optical structures up to 5 monolayers in thickness and developed a computer vision pipeline for evaluating crystal quality; with the Yeh Group, I grew graphene using PECVD for strain-engineered devices. In the past, I've conducted personal computational projects in studying graphene nanoribbons and adjoint data assimilation for NLPDEs.",
+    "I study physics at Caltech, with a particular interest in condensed matter and atomically thin materials. I have experience with few-layer two-dimensional materials including twisted moiré and artificial AA-stacked TMDs, as well as strain-engineered graphene growth with PECVD. In the past, I've conducted personal computational projects: a computer vision pipeline for evaluating TMD crystal quality, DFT simulation of graphene nanoribbons, and adjoint data assimilation for NLPDEs like Burgers' equation. Also acutely interested in a variety of other fields like quantum information and mechanistic interpretability.",
     "I also enjoy running mid-distance (800-meter) for the Caltech track and field team, playing guitar, and drawing.",
   ],
   /** Where to find me, under it. */

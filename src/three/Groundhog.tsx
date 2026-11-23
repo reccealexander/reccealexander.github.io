@@ -24,7 +24,7 @@ import { mergeVertices } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { FLOWER } from "@/lib/flowerLayout";
 import { pointer } from "@/lib/pointer";
 import { scrollState } from "@/lib/scroll";
-import { closeGroundhogMenu, groundhogMenu, openGroundhogMenu, placeGroundhogMenu } from "@/lib/groundhogMenu";
+import { closeGroundhogMenu, groundhogMenu, placeGroundhogMenu } from "@/lib/groundhogMenu";
 import { SOIL } from "./soil";
 import { swayGrid } from "./swayGrid";
 import { clearing, clearingDistance } from "./clearing";
@@ -713,13 +713,13 @@ export default function Groundhog() {
         const click = s.released && performance.now() - s.downAt < HOLD_MS;
         s.released = false;
         if (click) {
-          // A click, not a carry: back on its spot, and its menu.
+          // A click, not a carry: back on its spot. (It used to open a menu
+          // to the bowling alley, which is put away for now.)
           g.position.copy(s.from);
           s.last.copy(s.from);
           s.lift = 0;
           begin("look");
           s.look = Math.max(s.look, 2.5);
-          openGroundhogMenu();
         } else {
           begin("fall");
           s.placed = true;

@@ -70,6 +70,18 @@ const OPEN_FOR = 1.4;
  */
 export const clearing = { open: 0, k: 0, z: CLEARING.z, hz: CLEARING.hz };
 
+/**
+ * How far it runs down the field: its far edge fixed, its near edge reaching
+ * further toward the camera on a tall, narrow screen — where the text set in
+ * it wraps to many more lines and needs the extra height.
+ */
+function depth(aspect: number) {
+  const far = CLEARING.z - CLEARING.hz;
+  const tall = Math.min(1, Math.max(0, (1.1 - aspect) / 0.6));
+  const near = CLEARING.z + CLEARING.hz + 0.15 + 0.35 * tall;
+  return { z: (far + near) / 2, hz: (near - far) / 2 };
+}
+
 const halfWidthK = (aspect: number) =>
   Math.min(CLEARING.hx / (DEPTH_A + DEPTH_B * CLEARING.z), SHARE_OF_VIEW * TAN * aspect);
 /** Where on the opening frame a point on the ground at z is, up it (-1..1). */
@@ -87,8 +99,8 @@ export function clearingScreen(aspect: number) {
   return {
     left: 0.5 - half,
     right: 0.5 + half,
-    top: (1 - frameY(CLEARING.z - CLEARING.hz)) / 2,
-    bottom: (1 - frameY(CLEARING.z + CLEARING.hz)) / 2,
+    top: (1 - frameY(depth(aspect).z - depth(aspect).hz)) / 2,
+    bottom: (1 - frameY(depth(aspect).z + depth(aspect).hz)) / 2,
   };
 }
 
@@ -99,6 +111,9 @@ let announced = false;
 /** Called once a frame by the scene; `chapter` is the damped scroll and
     `aspect` the canvas's width over its height. */
 export function stepClearing(now: number, chapter: number, aspect: number) {
+  const d = depth(aspect);
+  clearing.z = d.z;
+  clearing.hz = d.hz;
   clearing.k = halfWidthK(aspect);
   if (started < 0) started = now;
   const t = reducedMotion() ? 1 : Math.min(1, Math.max(0, (now - started - OPEN_AT) / OPEN_FOR));

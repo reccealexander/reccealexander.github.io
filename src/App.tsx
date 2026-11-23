@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from "react";
+import { useEffect } from "react";
 import { initScroll } from "@/lib/scroll";
 import { initPointer } from "@/lib/pointer";
 import { useRoute, takeFieldScroll } from "@/lib/router";
@@ -13,15 +13,10 @@ import Contact from "@/ui/Contact";
 import BiomePicker from "@/ui/BiomePicker";
 import TimePicker from "@/ui/TimePicker";
 import StartBanner from "@/ui/StartBanner";
-import BowlingTransition from "@/ui/BowlingTransition";
-import { holdForBowling } from "@/lib/bowlingTransition";
-import { reducedMotion } from "@/three/quality";
 import LeafPage from "@/ui/LeafPage";
-import GroundhogMenu from "@/ui/GroundhogMenu";
 import { cancelGlide } from "@/ui/navTargets";
 
 // Its own scene and its own physics; nobody reading the field pays for it.
-const BowlingPage = lazy(() => import("@/bowling/BowlingPage"));
 
 /**
  * The field is a normal document — headings, anchors, selectable text — laid
@@ -87,7 +82,6 @@ function Field() {
       {/* "Try catching the groundhog", once, on opening. */}
       <StartBanner />
       {/* Opened by a click on the groundhog. */}
-      <GroundhogMenu />
     </>
   );
 }
@@ -121,27 +115,16 @@ export default function App() {
     };
   }, []);
 
-  // Arriving straight at the alley's address, the groundhog is already
-  // covering it and only has the second half of its crossing to do.
-  useEffect(() => {
-    if (route.name === "bowling" && !reducedMotion()) holdForBowling();
-    // Only on first load: a trip from the field starts the crossing itself.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <BiomeProvider>
       {route.name === "leaf" ? (
         <LeafPage id={route.id} />
-      ) : route.name === "bowling" ? (
-        <Suspense fallback={null}>
-          <BowlingPage />
-        </Suspense>
       ) : (
+        // The bowling alley is put away for now (its code is still in
+        // src/bowling; git tag `with-bowling` has it wired in), so its
+        // address is just the field.
         <Field />
       )}
-      {/* The groundhog that is the loading screen for the alley. */}
-      <BowlingTransition />
     </BiomeProvider>
   );
 }
