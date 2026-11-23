@@ -39,4 +39,5 @@ export const guitar = [
   { id: "cannock-chase", title: "Cannock Chase", src: "/audio/cannock-chase.m4a" },
   { id: "isnt-she-lovely", title: "Isn’t She Lovely", src: "/audio/isnt-she-lovely.m4a" },
   { id: "dont-know-why", title: "Don’t Know Why", src: "/audio/dont-know-why.m4a" },
+  { id: "misty", title: "Misty", src: "/audio/misty.m4a" },
 ] as const;
