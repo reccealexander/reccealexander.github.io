@@ -329,3 +329,37 @@ section[id] {
   }
 }
 
+/* The guitar menu (ui/GuitarMenu): grown up out of the phrase, and the little
+   level meter beside the track that is playing. */
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    scale: 0.9;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+.pop-in {
+  animation: pop-in 0.16s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+@keyframes guitar-bar {
+  0%,
+  100% {
+    height: 30%;
+  }
+  50% {
+    height: 100%;
+  }
+}
+.guitar-bar {
+  height: 30%;
+  animation: guitar-bar 0.7s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pop-in,
+  .guitar-bar {
+    animation: none;
+  }
+}

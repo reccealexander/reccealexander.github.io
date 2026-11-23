@@ -6,6 +6,7 @@ import { clamp } from "@/lib/math";
 import { clearingScreen, onClearingOpen, restartClearing } from "@/three/clearing";
 import { useJourney } from "./useJourney";
 import Wordmark from "./Wordmark";
+import GuitarMenu from "./GuitarMenu";
 
 /**
  * Standing in the field, at your own height.
@@ -20,6 +21,8 @@ import Wordmark from "./Wordmark";
  * out it outruns the field and tips back into the page, which clears the frame
  * before the camera starts closing on the flower.
  */
+const GUITAR = "playing guitar";
+
 export default function Hero() {
   const section = useAct("hero");
   const mark = useRef<HTMLDivElement>(null);
@@ -100,9 +103,23 @@ export default function Hero() {
             opened ? "translate-y-0 opacity-100 delay-500" : "translate-y-1.5 opacity-0"
           }`}
         >
-          {hero.description.map((para) => (
-            <p key={para.slice(0, 24)}>{para}</p>
-          ))}
+          {hero.description.map((para) => {
+            // "playing guitar" opens the recordings (ui/GuitarMenu).
+            const [before, after] = para.split(GUITAR);
+            return (
+              <p key={para.slice(0, 24)}>
+                {after === undefined ? (
+                  para
+                ) : (
+                  <>
+                    {before}
+                    <GuitarMenu label={GUITAR} />
+                    {after}
+                  </>
+                )}
+              </p>
+            );
+          })}
         </div>
         {/* Where to find me — arriving with the description. */}
         <div

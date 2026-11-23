@@ -32,3 +32,11 @@ export const hero = {
   linkedin: "https://www.linkedin.com/in/alexander-recce-27344b31a",
   email: "arecce@caltech.edu",
 } as const;
+
+/** The recordings behind "playing guitar" in the description (ui/GuitarMenu). */
+export const guitar = [
+  { id: "onde-ande-voce", title: "Onde Ande Voce", src: "/audio/onde-ande-voce.m4a" },
+  { id: "cannock-chase", title: "Cannock Chase", src: "/audio/cannock-chase.m4a" },
+  { id: "isnt-she-lovely", title: "Isn’t She Lovely", src: "/audio/isnt-she-lovely.m4a" },
+  { id: "dont-know-why", title: "Don’t Know Why", src: "/audio/dont-know-why.m4a" },
+] as const;
