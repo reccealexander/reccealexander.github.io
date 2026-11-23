@@ -127,19 +127,37 @@ export default function Cloud({
 /**
  * The two little dots a thought bubble trails back to where it came from,
  * popping in one after the other before the cloud itself (give the cloud
- * `bubble-pop` with `animationDelay: THOUGHT_DELAY`). Placed by the caller;
- * `flip` runs them up and to the left rather than to the right.
+ * `bubble-pop` with `thoughtTiming(pace)`). Placed by the caller; `flip` runs
+ * them up and to the left rather than to the right. `pace` stretches the whole
+ * sequence: 1 is quick, 2 takes twice as long.
  */
 export const THOUGHT_DELAY = "0.11s";
 
-export function ThoughtDots({ className = "", flip = false }: { className?: string; flip?: boolean }) {
+/** Style for the cloud at the end of a thought bubble, at the given pace. */
+export const thoughtTiming = (pace = 1) => ({
+  animationDelay: `${0.11 * pace}s`,
+  animationDuration: `${0.18 * pace}s`,
+});
+
+export function ThoughtDots({
+  className = "",
+  flip = false,
+  pace = 1,
+}: {
+  className?: string;
+  flip?: boolean;
+  pace?: number;
+}) {
   const dot = "bubble-pop absolute rounded-full bg-cloud shadow-[0_3px_8px_rgba(0,0,0,0.3)]";
   return (
     <span aria-hidden="true" className={`pointer-events-none absolute h-6 w-5 ${className}`}>
-      <span className={`${dot} bottom-0 h-[6px] w-[6px] ${flip ? "right-0" : "left-0"}`} />
+      <span
+        className={`${dot} bottom-0 h-[6px] w-[6px] ${flip ? "right-0" : "left-0"}`}
+        style={{ animationDuration: `${0.18 * pace}s` }}
+      />
       <span
         className={`${dot} bottom-[9px] h-[10px] w-[10px] ${flip ? "right-[7px]" : "left-[7px]"}`}
-        style={{ animationDelay: "0.055s" }}
+        style={{ animationDelay: `${0.055 * pace}s`, animationDuration: `${0.18 * pace}s` }}
       />
     </span>
   );

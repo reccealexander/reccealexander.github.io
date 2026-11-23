@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { guitar } from "@/lib/copy";
 import { setMusicPlaying } from "@/lib/music";
-import Cloud, { THOUGHT_DELAY, ThoughtDots } from "./Cloud";
+import Cloud, { ThoughtDots, thoughtTiming } from "./Cloud";
 
 /**
  * "playing guitar", in the description, with a few recordings behind it.
@@ -13,6 +13,9 @@ import Cloud, { THOUGHT_DELAY, ThoughtDots } from "./Cloud";
  * menu stays put while the cursor crosses the gap from the phrase to it.
  * While anything plays, notes drift over the field (ui/MusicNotes).
  */
+/** The guitar menu bubbles up more slowly than the others: more of a thought. */
+const PACE = 2.2;
+
 export default function GuitarMenu({ label }: { label: string }) {
   const [open, setOpen] = useState(false);
   const [playing, setPlaying] = useState<string | null>(null);
@@ -144,7 +147,7 @@ export default function GuitarMenu({ label }: { label: string }) {
       {open && (
         <>
           {/* A thought bubble: two dots up off the phrase, then the cloud. */}
-          <ThoughtDots className="bottom-full left-1/2 mb-0.5" />
+          <ThoughtDots pace={PACE} className="bottom-full left-1/2 mb-0.5" />
           <span
             ref={menu}
             role="group"
@@ -156,7 +159,7 @@ export default function GuitarMenu({ label }: { label: string }) {
               puff={0.42}
               opacity={1}
               className="bubble-pop origin-bottom"
-              style={{ animationDelay: THOUGHT_DELAY }}
+              style={thoughtTiming(PACE)}
               bodyClassName="py-0.5"
             >
               {guitar.map((t) => {
