@@ -40,8 +40,8 @@ function wedge(x: number, y: number, r0: number, r1: number, a0: number, a1: num
   return `M${p(r0, a0)} L${p(r1, a0)} A${r1},${r1} 0 0 1 ${p(r1, a1)} L${p(r0, a1)} A${r0},${r0} 0 0 0 ${p(r0, a0)}Z`;
 }
 
-/** The spectrum a disc throws back, twice round, blended smoothly between
-    these stops — soft, so the silver shows through. */
+/** The spectrum a disc throws back, blended smoothly between these stops —
+    soft, so the silver shows through. */
 const STOPS = [
   [255, 138, 138],
   [255, 196, 107],
@@ -51,15 +51,42 @@ const STOPS = [
   [180, 156, 255],
 ];
 const SLICES = 72;
-const SPECTRUM = Array.from({ length: SLICES }, (_, k) => {
-  const t = ((k / SLICES) * 2 * STOPS.length) % STOPS.length;
+/** The colour of slice k when the spectrum goes round `cycles` times. */
+const spectrum = (k: number, cycles: number) => {
+  const t = ((k / SLICES) * cycles * STOPS.length) % STOPS.length;
   const a = STOPS[Math.floor(t)];
   const b = STOPS[(Math.floor(t) + 1) % STOPS.length];
   const f = t - Math.floor(t);
   return `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * f)).join(" ")})`;
-});
+};
 
-function Disc({ x, y, r, colour, turn = 0 }: { x: number; y: number; r: number; colour: string; turn?: number }) {
+/** Each disc catches the light its own way: how many times the spectrum goes
+    round it, and how many bright flashes it has. */
+const SHEEN = [
+  { cycles: 2, flashes: 2 },
+  { cycles: 1, flashes: 1 },
+  { cycles: 4, flashes: 3 },
+  { cycles: 2, flashes: 1 },
+  { cycles: 3, flashes: 4 },
+];
+
+function Disc({
+  x,
+  y,
+  r,
+  colour,
+  turn = 0,
+  cycles = 2,
+  flashes = 2,
+}: {
+  x: number;
+  y: number;
+  r: number;
+  colour: string;
+  turn?: number;
+  cycles?: number;
+  flashes?: number;
+}) {
   const inner = r * 0.38;
   const n = SLICES;
   return (
@@ -70,15 +97,20 @@ function Disc({ x, y, r, colour, turn = 0 }: { x: number; y: number; r: number; 
         <path
           key={k}
           d={wedge(x, y, inner, r, turn + (k * 360) / n, turn + ((k + 1) * 360) / n + 1.6)}
-          fill={SPECTRUM[k]}
+          fill={spectrum(k, cycles)}
           fillOpacity={0.4}
         />
       ))}
       {/* A gloss over it all: bright near the middle and at the rim. */}
       <circle cx={x} cy={y} r={r} fill="url(#cd-shine)" />
-      {/* Two bright flashes where the light catches it, opposite each other. */}
-      <path d={wedge(x, y, inner, r, turn + 34, turn + 50)} fill="#fff" fillOpacity={0.5} />
-      <path d={wedge(x, y, inner, r, turn + 214, turn + 230)} fill="#fff" fillOpacity={0.35} />
+      {/* Bright flashes where the light catches it, spaced round evenly. */}
+      {Array.from({ length: flashes }, (_, f) => {
+        const at = turn + 34 + (f * 360) / flashes;
+        const width = 16 / Math.sqrt(flashes);
+        return (
+          <path key={f} d={wedge(x, y, inner, r, at, at + width)} fill="#fff" fillOpacity={f === 0 ? 0.5 : 0.35} />
+        );
+      })}
       {/* A glint across the top. */}
       <path
         d={`M${x - r * 0.62},${y - r * 0.5} A${r * 0.8},${r * 0.8} 0 0 1 ${x + r * 0.15},${y - r * 0.78}`}
@@ -169,7 +201,15 @@ export default function CdPlayer({
           >
             {/* Turning, once it is in. */}
             <g className={inside ? "cd-spin cd-spin-late" : undefined}>
-              <Disc x={discX(i)} y={SEAT.y} r={R} colour={DISC[i % DISC.length]} turn={i * 23} />
+              <Disc
+                x={discX(i)}
+                y={SEAT.y}
+                r={R}
+                colour={DISC[i % DISC.length]}
+                turn={i * 23}
+                cycles={SHEEN[i % SHEEN.length].cycles}
+                flashes={SHEEN[i % SHEEN.length].flashes}
+              />
             </g>
           </g>
         );
