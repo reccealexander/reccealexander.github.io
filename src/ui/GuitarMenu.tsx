@@ -158,17 +158,10 @@ export default function GuitarMenu({ label }: { label: string }) {
             style={{ transform: `translateX(calc(${-DOT_ANCHOR * 100}% + ${nudge}px))` }}
             className="absolute bottom-full left-1/2 z-20 mb-0.5 block w-max text-left [text-shadow:none]"
           >
-            {/* The cloud stays this size; the player and its discs are drawn
-                bigger than it, and run on under its edge — the player's
-                left side and the far discs trimmed. */}
+            {/* The cloud is sized to the player and the nearest discs; the
+                rest of the row runs on under its edge. */}
             <Cloud dots="left" pace={PACE} clip bodyClassName="h-[100px] w-[150px]">
-              <CdPlayer
-                className="absolute left-[-56px] top-[-26px] w-[280px]"
-                tracks={guitar}
-                playing={playing}
-                onPlay={play}
-                onStop={stop}
-              />
+              <CdPlayer tracks={guitar} playing={playing} onPlay={play} onStop={stop} />
             </Cloud>
           </span>
         </>

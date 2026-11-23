@@ -55,9 +55,7 @@ export default function CdPlayer({
   playing,
   onPlay,
   onStop,
-  className = "",
 }: {
-  className?: string;
   tracks: readonly Track[];
   playing: string | null;
   onPlay: (id: string) => void;
@@ -82,7 +80,7 @@ export default function CdPlayer({
   const order = tracks.map((t, i) => ({ t, i })).reverse();
 
   return (
-    <svg viewBox="0 0 268 130" className={`block h-auto overflow-visible ${className}`} aria-label="CD player">
+    <svg viewBox="0 0 268 130" className="absolute left-0 top-0 block h-auto w-[214px] overflow-visible" aria-label="CD player">
       {/* The lead: plugged into the side by a jack, coiling away below — and
           ending inside the cloud. */}
       <path
@@ -159,9 +157,9 @@ export default function CdPlayer({
           </feMerge>
         </filter>
       </defs>
-      <rect x={P.x + 33} y={LID_BOTTOM + 5} width={60} height={14} rx={2} fill="#1a1410" stroke={INK} strokeWidth={1.6} />
+      <rect x={P.x + 7} y={LID_BOTTOM + 5} width={60} height={14} rx={2} fill="#1a1410" stroke={INK} strokeWidth={1.6} />
       <text
-        x={P.x + 63}
+        x={P.x + 37}
         y={LID_BOTTOM + 15.4}
         textAnchor="middle"
         fontSize={9.5}
@@ -172,8 +170,8 @@ export default function CdPlayer({
         {shown ? shown.title : "pick a CD"}
       </text>
       <g {...stop} className={playing ? "cursor-pointer outline-none" : "outline-none"} opacity={playing ? 1 : 0.55}>
-        <circle cx={P.x + 18} cy={LID_BOTTOM + 12} r={7.5} fill="#f2eee6" stroke={INK} strokeWidth={2} />
-        <rect x={P.x + 15.2} y={LID_BOTTOM + 9.2} width={5.6} height={5.6} rx={0.8} fill={INK} />
+        <circle cx={P.x + 84} cy={LID_BOTTOM + 12} r={7.5} fill="#f2eee6" stroke={INK} strokeWidth={2} />
+        <rect x={P.x + 81.2} y={LID_BOTTOM + 9.2} width={5.6} height={5.6} rx={0.8} fill={INK} />
       </g>
 
       {/* The case: a thin copper frame all the way round, inside one ink
