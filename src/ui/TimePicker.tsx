@@ -1,6 +1,5 @@
 import { useRef } from "react";
 import { setTimeOfDay, TIMES, useTimeOfDay, type TimeOfDay } from "@/lib/timeOfDay";
-import { useJourney } from "./useJourney";
 
 /**
  * Morning, sunset or evening — the light the field is shown in.
@@ -59,18 +58,7 @@ function Icon({ id }: { id: TimeOfDay }) {
 export default function TimePicker() {
   const time = useTimeOfDay();
   const root = useRef<HTMLDivElement>(null);
-  const past = useRef(false);
 
-  useJourney((c) => {
-    const gone = c > 0.8 && c < 5.15;
-    if (gone === past.current) return;
-    past.current = gone;
-    const el = root.current;
-    if (!el) return;
-    el.style.opacity = gone ? "0" : "1";
-    el.style.pointerEvents = gone ? "none" : "auto";
-    el.inert = gone;
-  });
 
   const onKey = (e: React.KeyboardEvent) => {
     if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { BIOMES, type BiomeId } from "@/lib/biomes";
 import { useBiome } from "./BiomeContext";
-import { useJourney } from "./useJourney";
 
 /**
  * Changes what the field is made of.
@@ -64,19 +63,7 @@ export default function BiomePicker() {
   const root = useRef<HTMLDivElement>(null);
   const button = useRef<HTMLButtonElement>(null);
   const items = useRef<(HTMLButtonElement | null)[]>([]);
-  const pastRef = useRef(false);
 
-  useJourney((c) => {
-    const gone = c > 0.8 && c < 5.15;
-    if (gone === pastRef.current) return;
-    pastRef.current = gone;
-    const el = root.current;
-    if (!el) return;
-    el.style.opacity = gone ? "0" : "1";
-    el.style.pointerEvents = gone ? "none" : "auto";
-    el.inert = gone;
-    if (gone) setOpen(false);
-  });
 
   useEffect(() => {
     if (!open) return;

@@ -1,15 +1,10 @@
 import { useEffect } from "react";
-import { initScroll } from "@/lib/scroll";
+import { initScroll, useAct } from "@/lib/scroll";
 import { initPointer } from "@/lib/pointer";
 import { useRoute, takeFieldScroll } from "@/lib/router";
 import { BiomeProvider } from "@/ui/BiomeContext";
 import Scene from "@/three/Scene";
 import Hero from "@/ui/Hero";
-import Approach from "@/ui/Approach";
-import Features from "@/ui/Features";
-import Steps from "@/ui/Steps";
-import FAQ from "@/ui/FAQ";
-import Contact from "@/ui/Contact";
 import BiomePicker from "@/ui/BiomePicker";
 import TimePicker from "@/ui/TimePicker";
 import StartBanner from "@/ui/StartBanner";
@@ -42,6 +37,27 @@ if (typeof history !== "undefined" && "scrollRestoration" in history) {
   history.scrollRestoration = "manual";
 }
 
+/**
+ * The rest of the page: one screen with nothing on it, to scroll through.
+ *
+ * The page is only the opening shot now (the journey down into the plant is at
+ * git tag `with-journey`). Scrolling down this screen plays the opening
+ * backwards — the text goes, then the grass grows back over the clearing — so
+ * the bottom of the page is the full field. It is registered as the second
+ * act only so that the opening act's progress runs 0 to 1 over the whole
+ * scroll.
+ */
+function Outro() {
+  const section = useAct("approach");
+  return (
+    <section
+      ref={section as React.RefObject<HTMLElement>}
+      aria-hidden="true"
+      style={{ minHeight: "110svh" }}
+    />
+  );
+}
+
 function Field() {
   useEffect(() => initScroll(), []);
 
@@ -69,11 +85,7 @@ function Field() {
       <Scene />
       <main id="main" className="relative z-10">
         <Hero />
-        <Approach />
-        <Features />
-        <Steps />
-        <FAQ />
-        <Contact />
+        <Outro />
       </main>
       {/* Changes what the field is made of; fades out past the fold. */}
       <BiomePicker />

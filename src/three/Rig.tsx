@@ -2,11 +2,10 @@ import { useLayoutEffect, useMemo } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Color, FogExp2, PerspectiveCamera, Vector3 } from "three";
 import type { Biome } from "@/lib/biomes";
-import { nearestBeat, sampleCamera, type CameraSample } from "@/lib/journey";
+import { sampleCamera, type CameraSample } from "@/lib/journey";
 import { view } from "@/lib/flowerLayout";
 import { clamp } from "@/lib/math";
 import { stepPointer } from "@/lib/pointer";
-import { scrollState } from "@/lib/scroll";
 import { reducedMotion } from "./quality";
 
 /**
@@ -65,9 +64,6 @@ export default function Rig({ biome }: { biome: Biome }) {
   }, [scene, biome]);
 
   useFrame((state, dt) => {
-    // The chapter is advanced by the document's own frame loop (ui/useJourney),
-    // not here — see the note there.
-    const c = scrollState.smooth;
     const cam = camera as PerspectiveCamera;
 
     /*
@@ -81,7 +77,10 @@ export default function Rig({ biome }: { biome: Biome }) {
      * true chapter: you still read the whole story, you just read it as a
      * sequence of stills.
      */
-    sampleCamera(calm ? nearestBeat(c) : c, sample);
+    // The page is now just the opening shot, start to finish: the camera holds
+    // it, and scrolling plays the opening backwards instead (three/clearing,
+    // ui/Hero). The journey down into the plant is at git tag `with-journey`.
+    sampleCamera(0, sample);
     cam.position.copy(sample.pos);
 
     if (!calm) {

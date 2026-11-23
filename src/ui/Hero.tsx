@@ -42,11 +42,17 @@ export default function Hero() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  // Scrolling down plays the opening backwards: the text goes first, where it
+  // is, and then the grass grows back over the clearing (three/clearing).
   useJourney((c) => {
-    const t = clamp(c);
-    if (!mark.current) return;
-    mark.current.style.opacity = String(1 - clamp((t - 0.22) / 0.7));
-    mark.current.style.transform = `translate3d(0, ${-t * 46}%, 0) rotateX(${t * 14}deg)`;
+    const el = mark.current;
+    if (!el) return;
+    const t = clamp(c / 0.32);
+    el.style.opacity = String(1 - t);
+    el.style.transform = `translate3d(0, ${t * 6}px, 0)`;
+    const gone = t >= 1;
+    if (el.inert !== gone) el.inert = gone;
+    el.style.pointerEvents = gone ? "none" : "";
   });
 
   return (
@@ -55,7 +61,7 @@ export default function Hero() {
       ref={section as React.RefObject<HTMLElement>}
       aria-label="Introduction"
       className="relative flex flex-col items-center justify-center px-6 text-center"
-      style={{ perspective: "1100px", minHeight: `${LAYOUT.heroVh}svh` }}
+      style={{ minHeight: `${LAYOUT.heroVh}svh` }}
     >
       {/* The name and the description under it, filling the clearing to
           just inside its edges, the name along the top. Marked so the
@@ -69,7 +75,9 @@ export default function Hero() {
       <div
         ref={mark}
         data-hero-title=""
-        className="absolute will-change-transform"
+        // Held on the screen, as the clearing under it is: the camera does not
+        // move, so neither does the text.
+        className="fixed will-change-transform"
         style={
           {
             "--name": "clamp(1.6rem,3.4vw,2.6rem)",

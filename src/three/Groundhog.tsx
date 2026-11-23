@@ -396,8 +396,9 @@ const Z_AXIS = new Vector3(0, 0, 1);
 
 /** The opening view runs to here, and the end view from here to the bottom of
     the page — the camera is in the same place for both. */
-const UNTIL_CHAPTER = 0.3;
-const FROM_CHAPTER = 5.38;
+const UNTIL_CHAPTER = 0.4;
+// The page is only the opening shot now, so it is about the whole way down.
+const FROM_CHAPTER = 0;
 /** The first time, on opening: soon, while the clearing is opening. */
 const FIRST_WAIT = 1.8;
 /** How far from the clearing's edge it keeps — its body and the soft rim of
@@ -405,7 +406,7 @@ const FIRST_WAIT = 1.8;
 const OFF_CLEARING = 0.28;
 /** While the page is near the opening shot the clearing is there, or about to
     be: the groundhog keeps off where it will be, not only where it is yet. */
-const CLEARING_UNTIL = 0.6;
+const CLEARING_UNTIL = 0.95;
 const RISE = 0.55;
 const DUCK = 0.28;
 /** Touched by the cursor: a flinch on the spot, not a retreat — it has to

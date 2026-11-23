@@ -63,6 +63,9 @@ const REACH = 0.85;
 /** When it starts opening, after the first frame, and how long it takes. */
 const OPEN_AT = 1.0;
 const OPEN_FOR = 1.4;
+/** Where in the scroll (0 top, 1 bottom) it grows back over, and how long. */
+const CLOSE_FROM = 0.38;
+const CLOSE_FOR = 0.57;
 
 /**
  * The clearing as the shaders take it: `k` sets its half-width, which at z is
@@ -118,8 +121,9 @@ export function stepClearing(now: number, chapter: number, aspect: number) {
   if (started < 0) started = now;
   const t = reducedMotion() ? 1 : Math.min(1, Math.max(0, (now - started - OPEN_AT) / OPEN_FOR));
   const intro = t * t * (3 - 2 * t);
-  // Closes as the camera goes down into the grass, and stays closed after.
-  const away = Math.min(1, Math.max(0, (chapter - 0.6) / 0.6));
+  // Scrolling down plays the opening backwards: once the text has gone
+  // (ui/Hero), the grass grows back in over the dirt, done by the bottom.
+  const away = Math.min(1, Math.max(0, (chapter - CLOSE_FROM) / CLOSE_FOR));
   clearing.open = intro * (1 - away * away * (3 - 2 * away));
   if (!announced && intro > 0.8) {
     announced = true;
