@@ -17,8 +17,19 @@ const PATH =
   "M96,84 C110,10 240,-20 271,70 C360,40 490,130 365,198 C420,270 320,360 248,276 " +
   "C225,350 110,350 88,263 C10,290 -35,180 43,148 C5,110 40,45 96,84 Z";
 const VIEW = { x: 2.4, y: 14.4, w: 414.3, h: 315.6 };
-/** The part of it that is safely inside, as fractions of its width and height. */
-const SAFE = { x0: 0.14, x1: 0.87, y0: 0.23, y1: 0.78 };
+/** Its middle by area, as fractions of its width and height: where the
+    contents go, so they sit in the body of the cloud. */
+const MIDDLE = { x: 0.51, y: 0.52 };
+/**
+ * How much of its width and height a box centred there can take and still
+ * keep a comfortable margin from the line all round — measured off the outline
+ * for a box half again as wide as tall, and one twice as wide, and eased
+ * between (a wider box can be a little wider, though no taller).
+ */
+function room(aspect: number) {
+  const t = Math.min(1, Math.max(0, (aspect - 1.45) / 0.55));
+  return { w: 0.525 + 0.16 * t, h: 0.475 - 0.024 * t };
+}
 
 export default function Cloud({
   className = "",
@@ -46,18 +57,16 @@ export default function Cloud({
     return () => watch.disconnect();
   }, []);
 
-  // Scaled, as a whole, until the contents fit the safe middle; the contents
-  // sit at the middle of that.
+  // Scaled, as a whole, until the contents fit the roomy middle with a margin
+  // to spare; the contents sit at the cloud's middle.
   let pad: { l: number; r: number; t: number; b: number } | null = null;
   if (size) {
-    const s = Math.max(
-      size.w / ((SAFE.x1 - SAFE.x0) * VIEW.w),
-      size.h / ((SAFE.y1 - SAFE.y0) * VIEW.h),
-    );
+    const fit = room(size.w / Math.max(1, size.h));
+    const s = Math.max(size.w / (fit.w * VIEW.w), size.h / (fit.h * VIEW.h));
     const W = VIEW.w * s;
     const H = VIEW.h * s;
-    const l = ((SAFE.x0 + SAFE.x1) / 2) * W - size.w / 2;
-    const t = ((SAFE.y0 + SAFE.y1) / 2) * H - size.h / 2;
+    const l = MIDDLE.x * W - size.w / 2;
+    const t = MIDDLE.y * H - size.h / 2;
     pad = { l, t, r: W - size.w - l, b: H - size.h - t };
   }
 

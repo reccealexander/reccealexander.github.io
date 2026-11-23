@@ -168,7 +168,7 @@ export default function GuitarMenu({ label }: { label: string }) {
               opacity={1}
               className="bubble-pop origin-bottom"
               style={thoughtTiming(PACE)}
-              bodyClassName="w-44"
+              bodyClassName=""
             >
               {guitar.map((t) => {
                 const on = playing === t.id;
@@ -179,7 +179,7 @@ export default function GuitarMenu({ label }: { label: string }) {
                     onClick={() => play(t.id, t.src)}
                     aria-pressed={on}
                     aria-label={`${on ? "Pause" : "Play"} ${t.title}`}
-                    className={`relative flex w-full items-center gap-2 overflow-hidden rounded-md px-1.5 py-0.5 text-[0.78rem] transition-colors ${
+                    className={`relative flex w-full items-center gap-2 overflow-hidden rounded-md px-1.5 py-[3px] text-[0.84rem] transition-colors ${
                       on ? "bg-void/10 font-semibold" : "hover:bg-void/[0.07]"
                     }`}
                   >
@@ -195,19 +195,7 @@ export default function GuitarMenu({ label }: { label: string }) {
                         </svg>
                       )}
                     </span>
-                    <span className="min-w-0 flex-1 truncate text-left">{t.title}</span>
-                    {/* A little level meter while it plays. */}
-                    {on && (
-                      <span aria-hidden="true" className="flex h-3 items-end gap-[2px]">
-                        {[0, 1, 2].map((i) => (
-                          <span
-                            key={i}
-                            className="guitar-bar w-[2px] rounded-full bg-ember"
-                            style={{ animationDelay: `${i * 0.18}s` }}
-                          />
-                        ))}
-                      </span>
-                    )}
+                    <span className="flex-1 whitespace-nowrap pr-1.5 text-left">{t.title}</span>
                     {/* How far through it is. */}
                     {on && (
                       <span

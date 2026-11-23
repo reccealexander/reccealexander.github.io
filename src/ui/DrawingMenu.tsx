@@ -160,7 +160,7 @@ export default function DrawingMenu({ label }: { label: string }) {
                 aria-label={`${drawing.title} Open it larger.`}
                 className="group flex items-center gap-2 text-left"
               >
-                <span className="block w-[5.5rem] text-[0.7rem] font-semibold leading-snug">
+                <span className="block w-[5.75rem] text-[0.76rem] font-semibold leading-snug">
                   {drawing.title}
                 </span>
                 <img
