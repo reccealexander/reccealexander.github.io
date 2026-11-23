@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+/* The CD player's display face (ui/CdPlayer): VT323, a terminal-screen face,
+   served from the site itself. SIL Open Font License; latin subset. */
+@font-face {
+  font-family: "VT323";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/vt323-latin.woff2") format("woff2");
+}
+
 /* Petal design system — the same token contract the DOM site is written
    against, carried over verbatim so this build and that one stay one brand.
    The 3D scene reads the same values from lib/palette.ts. */

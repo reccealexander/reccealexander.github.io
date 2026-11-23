@@ -139,14 +139,25 @@ export default function CdPlayer({
 
       {/* The control strip. */}
       <rect x={P.x} y={LID_BOTTOM} width={P.size} height={BOTTOM - LID_BOTTOM} fill="#bccac4" />
-      <rect x={P.x + 7} y={LID_BOTTOM + 5} width={60} height={14} rx={2} fill="#1d2924" stroke={INK} strokeWidth={1.6} />
+      {/* The display: amber on near-black, in a terminal face, glowing. */}
+      <defs>
+        <filter id="cd-glow" x="-20%" y="-50%" width="140%" height="200%">
+          <feGaussianBlur stdDeviation="0.9" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+      <rect x={P.x + 7} y={LID_BOTTOM + 5} width={60} height={14} rx={2} fill="#1a1410" stroke={INK} strokeWidth={1.6} />
       <text
         x={P.x + 37}
-        y={LID_BOTTOM + 14.6}
+        y={LID_BOTTOM + 15.4}
         textAnchor="middle"
-        fontSize={6.6}
-        fill="#bfe9c9"
-        style={{ fontFamily: "var(--font-sans)" }}
+        fontSize={9.5}
+        fill="#ff9d3d"
+        filter="url(#cd-glow)"
+        style={{ fontFamily: "VT323, ui-monospace, Menlo, monospace" }}
       >
         {shown ? shown.title : "pick a CD"}
       </text>
