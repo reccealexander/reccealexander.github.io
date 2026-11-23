@@ -3,9 +3,9 @@ import { useState, type KeyboardEvent } from "react";
 /**
  * The guitar recordings as a little CD player (ui/GuitarMenu).
  *
- * Drawn in the same pen as the cloud it sits in: a sharp-cornered square
- * player whose whole lid is clear, so the disc in it can be seen, with a strip
- * of controls along its bottom, and a lead plugged into its side by an audio
+ * Drawn in the same pen as the cloud it sits in: a sharp-cornered player
+ * whose top is a square clear lid, so the disc in it can be seen, with a strip
+ * of controls under it, and a lead plugged into its side by an audio
  * jack. The five discs lie in a row along its right side, the first tucked in
  * under the lid and on top of the rest, each further one beneath the one
  * before. Pointing at one lifts it and puts its name on the display; pressing
@@ -19,15 +19,17 @@ const INK = "#141414";
 /** Silvery, and only just told apart. */
 const DISC = ["#d6d9dc", "#cfd3d7", "#d9d6d1", "#d1d6d3", "#d7d2d5"];
 
-/** The player: a square, its lid the top three quarters, controls below. */
+/** The player: a square clear lid, with the strip of controls under it. */
 const P = { x: 8, y: 4, size: 100 };
-const LID_BOTTOM = P.y + 76;
+const LID_BOTTOM = P.y + P.size;
+const BOTTOM = LID_BOTTOM + 24;
 const RIGHT = P.x + P.size;
-/** Where a disc sits once it is in. */
-const SEAT = { x: P.x + P.size / 2, y: P.y + 38 };
-/** The row of discs, level with the seat, the first tucked in under the lid. */
-const R = 26;
-const discX = (i: number) => RIGHT + 12 + i * 22;
+/** Where a disc sits once it is in: the middle of the lid. */
+const SEAT = { x: P.x + P.size / 2, y: P.y + P.size / 2 };
+/** Discs that all but fill the lid; the row of them level with the seat, the
+    first tucked in under the lid's edge. */
+const R = 46;
+const discX = (i: number) => RIGHT + R - 14 + i * 20;
 
 function Disc({ x, y, r, colour }: { x: number; y: number; r: number; colour: string }) {
   return (
@@ -78,20 +80,20 @@ export default function CdPlayer({
   const order = tracks.map((t, i) => ({ t, i })).reverse();
 
   return (
-    <svg viewBox="0 0 240 108" className="block h-auto w-[250px] overflow-visible" aria-label="CD player">
+    <svg viewBox="0 0 268 130" className="block h-auto w-[228px] overflow-visible sm:w-[264px]" aria-label="CD player">
       {/* The lead: plugged into the side by a jack, coiling away below — and
           ending inside the cloud. */}
       <path
-        d={`M${P.x - 15},${P.y + 88} C${P.x - 30},${P.y + 90} ${P.x - 36},${P.y + 104} ${P.x - 30},${P.y + 114} C${P.x - 24},${P.y + 124} ${P.x - 6},${P.y + 124} ${P.x + 6},${P.y + 118}`}
+        d={`M${P.x - 15},${BOTTOM - 10} C${P.x - 30},${BOTTOM - 8} ${P.x - 36},${BOTTOM + 6} ${P.x - 30},${BOTTOM + 16} C${P.x - 24},${BOTTOM + 26} ${P.x - 6},${BOTTOM + 26} ${P.x + 6},${BOTTOM + 20}`}
         fill="none"
         stroke={INK}
         strokeWidth={3.4}
         strokeLinecap="round"
       />
       {/* The jack: its plastic grip, then the metal plug going into the side. */}
-      <rect x={P.x - 17} y={P.y + 83.5} width={10} height={9} rx={2.5} fill="#2b2b2b" stroke={INK} strokeWidth={1.6} />
-      <rect x={P.x - 7.5} y={P.y + 85.6} width={8.5} height={4.8} fill="#c9ccce" stroke={INK} strokeWidth={1.4} />
-      <path d={`M${P.x - 3.6},${P.y + 85.6} v4.8`} stroke={INK} strokeWidth={1.4} />
+      <rect x={P.x - 17} y={BOTTOM - 14.5} width={10} height={9} rx={2.5} fill="#2b2b2b" stroke={INK} strokeWidth={1.6} />
+      <rect x={P.x - 7.5} y={BOTTOM - 12.4} width={8.5} height={4.8} fill="#c9ccce" stroke={INK} strokeWidth={1.4} />
+      <path d={`M${P.x - 3.6},${BOTTOM - 12.4} v4.8`} stroke={INK} strokeWidth={1.4} />
 
       {/* Inside the player, under the lid: a dark tray and its spindle. */}
       <rect x={P.x} y={P.y} width={P.size} height={LID_BOTTOM - P.y} fill="#2a3330" />
@@ -131,12 +133,12 @@ export default function CdPlayer({
       {/* The clear lid, over all of it, with a glint or two. */}
       <g {...stop} aria-hidden={playing ? undefined : true} className={playing ? "cursor-pointer outline-none" : "outline-none"}>
         <rect x={P.x} y={P.y} width={P.size} height={LID_BOTTOM - P.y} fill="#e6f2ee" fillOpacity={0.22} />
-        <path d={`M${P.x + 12},${P.y + 30} L${P.x + 38},${P.y + 6}`} stroke="#fff" strokeOpacity={0.5} strokeWidth={4} strokeLinecap="round" />
-        <path d={`M${P.x + 14},${P.y + 44} L${P.x + 54},${P.y + 8}`} stroke="#fff" strokeOpacity={0.28} strokeWidth={2.5} strokeLinecap="round" />
+        <path d={`M${P.x + 10},${P.y + 38} L${P.x + 44},${P.y + 6}`} stroke="#fff" strokeOpacity={0.5} strokeWidth={4} strokeLinecap="round" />
+        <path d={`M${P.x + 12},${P.y + 56} L${P.x + 62},${P.y + 8}`} stroke="#fff" strokeOpacity={0.28} strokeWidth={2.5} strokeLinecap="round" />
       </g>
 
       {/* The control strip. */}
-      <rect x={P.x} y={LID_BOTTOM} width={P.size} height={P.y + P.size - LID_BOTTOM} fill="#bccac4" />
+      <rect x={P.x} y={LID_BOTTOM} width={P.size} height={BOTTOM - LID_BOTTOM} fill="#bccac4" />
       <rect x={P.x + 7} y={LID_BOTTOM + 5} width={60} height={14} rx={2} fill="#1d2924" stroke={INK} strokeWidth={1.6} />
       <text
         x={P.x + 37}
@@ -154,7 +156,7 @@ export default function CdPlayer({
       </g>
 
       {/* The case: sharp corners, one line round it, and the lid's edge. */}
-      <rect x={P.x} y={P.y} width={P.size} height={P.size} fill="none" stroke={INK} strokeWidth={2.8} strokeLinejoin="miter" />
+      <rect x={P.x} y={P.y} width={P.size} height={BOTTOM - P.y} fill="none" stroke={INK} strokeWidth={2.8} strokeLinejoin="miter" />
       <path d={`M${P.x},${LID_BOTTOM} H${RIGHT}`} stroke={INK} strokeWidth={2.2} />
     </svg>
   );
