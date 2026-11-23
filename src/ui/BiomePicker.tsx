@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { BIOMES, type BiomeId } from "@/lib/biomes";
 import { useBiome } from "./BiomeContext";
-import Cloud from "./Cloud";
+import Cloud, { CloudBlob } from "./Cloud";
 
 /**
  * Changes what the field is made of.
@@ -20,14 +20,14 @@ import Cloud from "./Cloud";
  * their place with no way to know why.
  */
 
-function Glyph({ id }: { id: BiomeId }) {
+function Glyph({ id, big = false }: { id: BiomeId; big?: boolean }) {
   const common = {
     viewBox: "0 0 20 20",
     fill: "none",
     stroke: "currentColor",
-    strokeWidth: 1.4,
+    strokeWidth: big ? 1.7 : 1.4,
     strokeLinecap: "round" as const,
-    className: "h-4 w-4",
+    className: big ? "h-6 w-6" : "h-4 w-4",
   };
   if (id === "meadow")
     return (
@@ -169,34 +169,14 @@ export default function BiomePicker() {
         aria-expanded={open}
         aria-label={`Biome: ${biome.label}`}
         onClick={() => setOpen((v) => !v)}
-        // The button is a patch of the biome itself: its ground going into
-        // what grows on it, the swatch's two colours, darkened for the type.
-        className="flex items-center gap-2.5 rounded-lg border border-white/15 py-1.5 pl-2.5 pr-2 text-white shadow-[0_8px_24px_rgba(0,0,0,0.4)] transition-[background,border-color] duration-500 hover:border-white/40"
-        style={{
-          background: `linear-gradient(rgba(0,0,0,0.28), rgba(0,0,0,0.38)), linear-gradient(140deg, ${biome.swatch[0]} 0%, ${biome.swatch[0]} 45%, ${biome.swatch[1]} 130%)`,
-        }}
+        title={`Biome: ${biome.label}`}
+        // Just the biome's own mark, in a blob of cloud like the rings a
+        // thought trails — the menu bubbles up out of it.
+        className="block transition-transform duration-200 hover:scale-105 focus-visible:scale-105"
       >
-        <span className="grid h-7 w-7 place-items-center rounded-md bg-white/15 ring-1 ring-white/25">
-          <Glyph id={biome.id} />
-        </span>
-        <span className="flex flex-col items-start leading-tight [text-shadow:0_1px_2px_rgba(0,0,0,0.45)]">
-          <span className="text-[0.6rem] uppercase tracking-[0.18em] text-white/70">Biome</span>
-          <span className="max-w-[9rem] truncate text-[0.85rem] font-medium">{biome.label}</span>
-        </span>
-        <svg
-          viewBox="0 0 20 20"
-          className={`ml-0.5 h-3.5 w-3.5 text-white/70 transition-transform duration-200 ${
-            open ? "rotate-180" : ""
-          }`}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.75"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <path d="M6 12l4-4 4 4" />
-        </svg>
+        <CloudBlob className="h-[57px] w-[62px]">
+          <Glyph id={biome.id} big />
+        </CloudBlob>
       </button>
     </div>
   );
