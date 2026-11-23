@@ -25,14 +25,22 @@ function Glyph({ id, big = false }: { id: BiomeId; big?: boolean }) {
     viewBox: "0 0 20 20",
     fill: "none",
     stroke: "currentColor",
-    strokeWidth: big ? 1.7 : 1.4,
+    strokeWidth: big ? 1.6 : 1.4,
     strokeLinecap: "round" as const,
-    className: big ? "h-6 w-6" : "h-4 w-4",
+    className: big ? "h-5 w-5" : "h-4 w-4",
   };
+  // A meadow: a wildflower — five round petals on a stem with two leaves.
   if (id === "meadow")
     return (
       <svg {...common} aria-hidden>
-        <path d="M4 17c0-4 1.2-7 3-9M10 17c0-5 .6-8 1.6-10M16 17c0-3.4-.8-6-2.2-8" />
+        <circle cx="10.00" cy="3.70" r="1.55" />
+        <circle cx="12.57" cy="5.57" r="1.55" />
+        <circle cx="11.59" cy="8.58" r="1.55" />
+        <circle cx="8.41" cy="8.58" r="1.55" />
+        <circle cx="7.43" cy="5.57" r="1.55" />
+        <circle cx="10" cy="6.4" r="0.9" fill="currentColor" stroke="none" />
+        <path d="M10 10.2v7.6" />
+        <path d="M10 15.6c-2.3 0-3.7-1.3-4.1-3.3 2.1-.1 3.5.9 4.1 3.3ZM10 13.6c2 0 3.3-1.1 3.7-2.9-1.9-.1-3.2.8-3.7 2.9Z" />
       </svg>
     );
   if (id === "flowers")
@@ -174,7 +182,7 @@ export default function BiomePicker() {
         // thought trails — the menu bubbles up out of it.
         className="block transition-transform duration-200 hover:scale-105 focus-visible:scale-105"
       >
-        <CloudBlob className="h-[57px] w-[62px]">
+        <CloudBlob className="h-[42px] w-[46px]">
           <Glyph id={biome.id} big />
         </CloudBlob>
       </button>
