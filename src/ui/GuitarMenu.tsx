@@ -19,7 +19,6 @@ const PACE = 2.2;
 export default function GuitarMenu({ label }: { label: string }) {
   const [open, setOpen] = useState(false);
   const [playing, setPlaying] = useState<string | null>(null);
-  const [progress, setProgress] = useState(0);
   const audio = useRef<HTMLAudioElement | null>(null);
   const root = useRef<HTMLSpanElement>(null);
   const closeAt = useRef(0);
@@ -59,18 +58,14 @@ export default function GuitarMenu({ label }: { label: string }) {
     a.preload = "none";
     const ended = () => {
       setPlaying(null);
-      setProgress(0);
       setMusicPlaying(false);
     };
-    const tick = () => setProgress(a.duration ? a.currentTime / a.duration : 0);
     a.addEventListener("ended", ended);
-    a.addEventListener("timeupdate", tick);
     audio.current = a;
     return () => {
       a.pause();
       setMusicPlaying(false);
       a.removeEventListener("ended", ended);
-      a.removeEventListener("timeupdate", tick);
       audio.current = null;
     };
   }, []);
@@ -109,14 +104,12 @@ export default function GuitarMenu({ label }: { label: string }) {
       // Paused, it goes back to the top: played again, it starts over.
       a.pause();
       a.currentTime = 0;
-      setProgress(0);
       setPlaying(null);
       setMusicPlaying(false);
       return;
     }
     if (!a.src.endsWith(src)) {
       a.src = src;
-      setProgress(0);
     }
     a.play().then(
       () => {
@@ -164,11 +157,12 @@ export default function GuitarMenu({ label }: { label: string }) {
             style={{ transform: `translateX(calc(${-DOT_ANCHOR * 100}% + ${nudge}px))` }}
             className="absolute bottom-full left-1/2 z-20 mb-0.5 block w-max text-left [text-shadow:none]"
           >
-            <Cloud
-              dots="left"
-              pace={PACE}
-              bodyClassName=""
-            >
+            {/* Laid out like the biome menu (ui/BiomePicker): a small
+                heading, the titles as rows, and the one playing marked. */}
+            <Cloud dots="left" pace={PACE} bodyClassName="w-40">
+              <span className="block px-1.5 pb-1 text-[0.6rem] uppercase tracking-[0.2em] text-void/55">
+                Guitar
+              </span>
               {guitar.map((t) => {
                 const on = playing === t.id;
                 return (
@@ -178,31 +172,17 @@ export default function GuitarMenu({ label }: { label: string }) {
                     onClick={() => play(t.id, t.src)}
                     aria-pressed={on}
                     aria-label={`${on ? "Pause" : "Play"} ${t.title}`}
-                    className={`relative flex w-full items-center gap-2 overflow-hidden rounded-md px-1.5 py-[3px] text-[0.84rem] transition-colors ${
-                      on ? "bg-void/10 font-semibold" : "hover:bg-void/[0.07]"
+                    className={`flex w-full items-center gap-2 rounded-md px-1.5 py-0.5 text-left text-[0.8rem] transition-colors ${
+                      on ? "bg-void/10 font-semibold" : "hover:bg-void/[0.07] focus-visible:bg-void/[0.07]"
                     }`}
                   >
-                    <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-void/10">
-                      {on ? (
-                        <svg viewBox="0 0 12 12" className="h-2 w-2" fill="currentColor" aria-hidden="true">
-                          <rect x="2" y="1.5" width="2.6" height="9" rx="0.6" />
-                          <rect x="7.4" y="1.5" width="2.6" height="9" rx="0.6" />
-                        </svg>
-                      ) : (
-                        <svg viewBox="0 0 12 12" className="ml-px h-2 w-2" fill="currentColor" aria-hidden="true">
-                          <path d="M2.5 1.4v9.2a.5.5 0 0 0 .76.43l7.4-4.6a.5.5 0 0 0 0-.86l-7.4-4.6a.5.5 0 0 0-.76.43Z" />
-                        </svg>
-                      )}
-                    </span>
-                    <span className="flex-1 whitespace-nowrap pr-1.5 text-left">{t.title}</span>
-                    {/* How far through it is. */}
-                    {on && (
-                      <span
-                        aria-hidden="true"
-                        className="absolute bottom-0 left-0 h-[2px] bg-ember/70"
-                        style={{ width: `${progress * 100}%` }}
-                      />
-                    )}
+                    <span className="min-w-0 flex-1">{t.title}</span>
+                    <span
+                      aria-hidden="true"
+                      className={`h-1.5 w-1.5 shrink-0 rounded-full bg-ember transition-opacity ${
+                        on ? "opacity-100" : "opacity-0"
+                      }`}
+                    />
                   </button>
                 );
               })}
