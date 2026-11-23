@@ -3,43 +3,47 @@ import { useState, type KeyboardEvent } from "react";
 /**
  * The guitar recordings as a little CD player (ui/GuitarMenu).
  *
- * Drawn in the same pen as the cloud it sits in: a player with a round window,
- * a display and a stop button, and the five discs fanned out of the slot down
- * its right side, each tucked a little way in. Pointing at one nudges it out
- * and puts its name up on the display; pressing it slides it the rest of the
- * way in, and it turns in the window while it plays. Another disc swaps with
- * it; the stop button (or the window) slides it back out.
+ * Drawn in the same pen as the cloud it sits in: a square player with a round
+ * window, a display and a stop button, its cable running off out of the
+ * cloud, and the five discs in a row along its right side, the first tucked in
+ * behind it and each lying over the one before. Pointing at one nudges it up
+ * and puts its name on the display; pressing it slides it into the player,
+ * where it turns in the window while it plays. Another disc swaps with it; the
+ * stop button (or the window) slides it back out.
  */
 
 type Track = { id: string; title: string };
 
 const INK = "#141414";
-/** Each disc its own colour, so they can be told apart at a glance. */
-const DISC = ["#f2c744", "#e4813f", "#8fb8e8", "#e79bb0", "#9fd3b4"];
+/** Silvery, and only just told apart. */
+const DISC = ["#d6d9dc", "#cfd3d7", "#d9d6d1", "#d1d6d3", "#d7d2d5"];
 
-/** Where the discs sit: centred past the player's right edge, a little
-    staggered so each one shows. */
-const OUT_X = 167;
-const stagger = (i: number) => (i % 2) * 5;
-const R = 19;
-const IN_X = 128;
-const rowY = (i: number) => 18 + i * 16;
+/** The player: a square. */
+const P = { x: 5, y: 5, size: 90 };
+const PLAYER_RIGHT = P.x + P.size;
+/** The window, where the playing disc turns. */
+const WIN = { x: 50, y: 39, r: 24 };
+/** The row of discs: centred along the player's middle, the first tucked in
+    behind its right side. */
+const R = 20;
+const ROW_Y = 50;
+const discX = (i: number) => PLAYER_RIGHT + 13 + i * 24;
 
 function Disc({ x, y, r, colour }: { x: number; y: number; r: number; colour: string }) {
   return (
     <>
       <circle cx={x} cy={y} r={r} fill={colour} stroke={INK} strokeWidth={2.2} />
-      {/* A sheen across it. */}
+      {/* A faint sheen across it. */}
       <path
         d={`M${x - r * 0.62},${y - r * 0.5} A${r * 0.8},${r * 0.8} 0 0 1 ${x + r * 0.15},${y - r * 0.78}`}
         fill="none"
         stroke="#fff"
-        strokeOpacity={0.7}
+        strokeOpacity={0.75}
         strokeWidth={2}
         strokeLinecap="round"
       />
-      <circle cx={x} cy={y} r={r * 0.42} fill="#f6f1e7" stroke={INK} strokeWidth={1.6} />
-      <circle cx={x} cy={y} r={r * 0.14} fill={INK} />
+      <circle cx={x} cy={y} r={r * 0.4} fill="#f2eee6" stroke={INK} strokeWidth={1.6} />
+      <circle cx={x} cy={y} r={r * 0.13} fill={INK} />
     </>
   );
 }
@@ -64,13 +68,30 @@ export default function CdPlayer({
       go();
     }
   };
+  const stopProps = {
+    role: "button",
+    tabIndex: playing ? 0 : -1,
+    "aria-label": "Stop",
+    onClick: () => playing && onStop(),
+    onKeyDown: key(() => playing && onStop()),
+  };
 
   return (
-    <svg viewBox="0 0 196 100" className="block h-auto w-[212px] overflow-visible" aria-label="CD player">
-      {/* The discs, behind the player, so the slot hides the part pushed in. */}
+    <svg viewBox="0 0 228 100" className="block h-auto w-[236px] overflow-visible" aria-label="CD player">
+      {/* The cable, from the bottom of the player's left side, off out of the
+          cloud. */}
+      <path
+        d={`M${P.x + 1},${P.y + P.size - 12} C${P.x - 22},${P.y + P.size - 8} ${P.x - 34},${P.y + P.size + 22} ${P.x - 78},${P.y + P.size + 70}`}
+        fill="none"
+        stroke={INK}
+        strokeWidth={4}
+        strokeLinecap="round"
+      />
+
+      {/* The discs, behind the player, so it hides the one tucked in. */}
       {tracks.map((t, i) => {
         const inside = t.id === playing;
-        const nudge = !inside && pointing === t.id ? 5 : 0;
+        const lift = !inside && pointing === t.id ? -5 : 0;
         return (
           <g
             key={t.id}
@@ -86,71 +107,42 @@ export default function CdPlayer({
             onBlur={() => setPointing((p) => (p === t.id ? null : p))}
             className={inside ? "outline-none" : "cursor-pointer outline-none"}
             style={{
-              transform: `translateX(${inside ? IN_X - OUT_X - stagger(i) : nudge}px)`,
+              transform: inside ? `translate(${WIN.x - discX(i)}px, 0px)` : `translate(0px, ${lift}px)`,
               transition: "transform 0.5s cubic-bezier(0.3, 0.7, 0.3, 1)",
             }}
           >
-            <Disc x={OUT_X + stagger(i)} y={rowY(i)} r={R} colour={DISC[i % DISC.length]} />
+            <Disc x={discX(i)} y={ROW_Y} r={R} colour={DISC[i % DISC.length]} />
           </g>
         );
       })}
 
       {/* The player. */}
-      <rect x={8} y={6} width={142} height={88} rx={14} fill="#a9c9bf" stroke={INK} strokeWidth={2.6} />
-      {/* The slot the discs go into, down its right side. */}
-      <path d="M149,11 V89" stroke={INK} strokeWidth={4} strokeLinecap="round" />
+      <rect x={P.x} y={P.y} width={P.size} height={P.size} rx={12} fill="#bccac4" stroke={INK} strokeWidth={2.6} />
 
       {/* The window, with the playing disc turning in it. */}
-      <g
-        role="button"
-        tabIndex={playing ? 0 : -1}
-        aria-label={playing ? "Stop" : undefined}
-        aria-hidden={playing ? undefined : true}
-        onClick={() => playing && onStop()}
-        onKeyDown={key(() => playing && onStop())}
-        className={playing ? "cursor-pointer outline-none" : "outline-none"}
-      >
-        <circle cx={50} cy={50} r={33} fill="#26302c" stroke={INK} strokeWidth={2.6} />
+      <g {...stopProps} aria-hidden={playing ? undefined : true} className={playing ? "cursor-pointer outline-none" : "outline-none"}>
+        <circle cx={WIN.x} cy={WIN.y} r={WIN.r} fill="#27302c" stroke={INK} strokeWidth={2.4} />
         {current >= 0 && (
           <g key={playing} className="cd-in">
             <g className="cd-spin">
-              <Disc x={50} y={50} r={27} colour={DISC[current % DISC.length]} />
+              <Disc x={WIN.x} y={WIN.y} r={WIN.r - 5} colour={DISC[current % DISC.length]} />
             </g>
           </g>
         )}
-        <circle cx={50} cy={50} r={33} fill="none" stroke="#fff" strokeOpacity={0.12} strokeWidth={6} />
+        <circle cx={WIN.x} cy={WIN.y} r={WIN.r} fill="none" stroke="#fff" strokeOpacity={0.12} strokeWidth={5} />
       </g>
 
       {/* The display. */}
-      <rect x={90} y={16} width={52} height={20} rx={4} fill="#1d2924" stroke={INK} strokeWidth={2} />
-      <text
-        x={116}
-        y={29.5}
-        textAnchor="middle"
-        fontSize={7}
-        fill="#bfe9c9"
-        style={{ fontFamily: "var(--font-sans)" }}
-      >
+      <rect x={13} y={69} width={58} height={16} rx={3.5} fill="#1d2924" stroke={INK} strokeWidth={1.8} />
+      <text x={42} y={79.8} textAnchor="middle" fontSize={6.6} fill="#bfe9c9" style={{ fontFamily: "var(--font-sans)" }}>
         {shown ? shown.title : "pick a CD"}
       </text>
 
       {/* Stop. */}
-      <g
-        role="button"
-        tabIndex={playing ? 0 : -1}
-        aria-label="Stop"
-        onClick={() => playing && onStop()}
-        onKeyDown={key(() => playing && onStop())}
-        className={playing ? "cursor-pointer" : ""}
-        opacity={playing ? 1 : 0.55}
-      >
-        <circle cx={104} cy={64} r={11} fill="#f6f1e7" stroke={INK} strokeWidth={2.2} />
-        <rect x={100} y={60} width={8} height={8} rx={1.2} fill={INK} />
+      <g {...stopProps} className={playing ? "cursor-pointer outline-none" : "outline-none"} opacity={playing ? 1 : 0.55}>
+        <circle cx={82} cy={77} r={7.5} fill="#f2eee6" stroke={INK} strokeWidth={2} />
+        <rect x={79.2} y={74.2} width={5.6} height={5.6} rx={1} fill={INK} />
       </g>
-      {/* And a little speaker. */}
-      {[0, 1, 2].map((r) =>
-        [0, 1, 2].map((c) => <circle key={`${r}${c}`} cx={124 + c * 6} cy={58 + r * 6} r={1.4} fill={INK} />),
-      )}
     </svg>
   );
 }
