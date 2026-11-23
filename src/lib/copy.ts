@@ -35,7 +35,7 @@ export const hero = {
 
 /** The recordings behind "playing guitar" in the description (ui/GuitarMenu). */
 export const guitar = [
-  { id: "onde-ande-voce", title: "Onde Ande Voce", src: "/audio/onde-ande-voce.m4a" },
+  { id: "onde-ande-voce", title: "Onde Anda Voc\u00ea", src: "/audio/onde-ande-voce.m4a" },
   { id: "cannock-chase", title: "Cannock Chase", src: "/audio/cannock-chase.m4a" },
   { id: "isnt-she-lovely", title: "Isn’t She Lovely", src: "/audio/isnt-she-lovely.m4a" },
   { id: "dont-know-why", title: "Don’t Know Why", src: "/audio/dont-know-why.m4a" },

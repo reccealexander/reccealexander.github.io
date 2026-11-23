@@ -5,8 +5,8 @@ import { guitar } from "@/lib/copy";
  * "playing guitar", in the description, with a few recordings behind it.
  *
  * Hovering the phrase (or tapping it, on a phone, or pressing it from the
- * keyboard) opens a small menu just above it; a track in it plays, and pressed
- * again pauses. One plays at a time, through the one audio element, and the
+ * keyboard) opens a small menu just above it; a track in it starts playing
+ * and the menu gets out of the way, and opened again, the same track pauses. One plays at a time, through the one audio element, and the
  * menu stays put while the cursor crosses the gap from the phrase to it.
  */
 export default function GuitarMenu({ label }: { label: string }) {
@@ -100,6 +100,9 @@ export default function GuitarMenu({ label }: { label: string }) {
       () => setPlaying(id),
       () => setPlaying(null),
     );
+    // Started: the menu has done its job.
+    window.clearTimeout(closeAt.current);
+    setOpen(false);
   };
 
   return (
