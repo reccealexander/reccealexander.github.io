@@ -139,19 +139,33 @@ export default function Cloud({
 /**
  * One of the drawing's rings on its own, as a little blob of cloud to put
  * something in — the biome button is one. It fills the box it is given.
+ * `shape` picks which of the three rings (0 largest, 2 smallest), `flip`
+ * mirrors it, and `fill` colours its inside.
  */
-export function CloudBlob({ className = "", children }: { className?: string; children?: ReactNode }) {
-  const r = CLOUD_DOTS[0];
+export function CloudBlob({
+  className = "",
+  shape = 0,
+  flip = false,
+  fill = "var(--color-cloud)",
+  children,
+}: {
+  className?: string;
+  shape?: number;
+  flip?: boolean;
+  fill?: string;
+  children?: ReactNode;
+}) {
+  const r = CLOUD_DOTS[shape] ?? CLOUD_DOTS[0];
   return (
     <span className={`relative grid place-items-center ${className}`}>
       <svg
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 h-full w-full overflow-visible"
-        style={{ filter: "drop-shadow(0 6px 14px rgba(0,0,0,0.35))" }}
+        style={{ filter: "drop-shadow(0 6px 14px rgba(0,0,0,0.35))", transform: flip ? "scaleX(-1)" : undefined }}
         viewBox={`${r.box.x} ${r.box.y} ${r.box.w} ${r.box.h}`}
         preserveAspectRatio="none"
       >
-        <path d={r.fill} fill="var(--color-cloud)" />
+        <path d={r.fill} fill={fill} style={{ transition: "fill 0.5s" }} />
         <path d={r.ink} fill="#141414" fillRule="evenodd" />
       </svg>
       <span className="relative text-void">{children}</span>
