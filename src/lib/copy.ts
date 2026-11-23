@@ -44,7 +44,7 @@ export const guitar = [
 
 /** The drawing behind "drawing" in the description (ui/DrawingMenu). */
 export const drawing = {
-  title: "What I\u2019m currently working on... my family:",
+  title: "What I\u2019m currently working on...",
   alt: "A pencil drawing in progress of my family: my mother and father behind, my two younger brothers in front.",
   small: "/media/family-drawing-small.jpg",
   large: "/media/family-drawing.jpg",
