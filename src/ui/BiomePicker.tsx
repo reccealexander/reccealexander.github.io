@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { BIOMES, type BiomeId } from "@/lib/biomes";
 import { useBiome } from "./BiomeContext";
+import Cloud, { THOUGHT_DELAY, ThoughtDots } from "./Cloud";
 
 /**
  * Changes what the field is made of.
@@ -112,44 +113,54 @@ export default function BiomePicker() {
       className="fixed bottom-4 right-4 z-50 transition-opacity duration-500 sm:bottom-6 sm:right-6"
     >
       {open && (
-        <div
-          role="menu"
-          aria-label="Biome"
-          onKeyDown={onMenuKey}
-          className="absolute bottom-full right-0 mb-2 w-[13rem] origin-bottom-right overflow-hidden rounded-lg border border-line bg-void/90 shadow-[0_18px_40px_rgba(0,0,0,0.5)] backdrop-blur-md [animation:biome-menu-in_160ms_cubic-bezier(0.2,0.9,0.3,1)]"
-        >
-          <p className="px-3.5 pb-1.5 pt-3 text-[0.625rem] uppercase tracking-[0.2em] text-muted">
-            Biome
-          </p>
-          {BIOMES.map((b, i) => {
-            const active = b.id === biome.id;
-            return (
-              <button
-                key={b.id}
-                ref={(el) => {
-                  items.current[i] = el;
-                }}
-                type="button"
-                role="menuitemradio"
-                aria-checked={active}
-                onClick={() => choose(b.id)}
-                className={`flex w-full items-center gap-3 px-3.5 py-2.5 text-left transition-colors ${
-                  active ? "bg-raise" : "hover:bg-shell focus-visible:bg-shell"
-                }`}
-              >
-                <span className={`min-w-0 flex-1 text-sm ${active ? "text-ink" : "text-ink/85"}`}>
-                  {b.label}
-                </span>
-                <span
-                  aria-hidden="true"
-                  className={`h-1.5 w-1.5 shrink-0 rounded-full bg-bloom transition-opacity ${
-                    active ? "opacity-100" : "opacity-0"
-                  }`}
-                />
-              </button>
-            );
-          })}
-        </div>
+        <>
+          {/* A thought bubble: two dots up off the button, then the cloud. */}
+          <ThoughtDots flip className="bottom-full right-10 mb-1" />
+          <div
+            role="menu"
+            aria-label="Biome"
+            onKeyDown={onMenuKey}
+            className="absolute bottom-full right-3 mb-[2.9rem] w-44"
+          >
+            <Cloud
+              puff={0.42}
+              opacity={1}
+              className="bubble-pop origin-bottom-right"
+              style={{ animationDelay: THOUGHT_DELAY }}
+              bodyClassName="py-0.5"
+            >
+              <span className="block px-1.5 pb-1 text-[0.6rem] uppercase tracking-[0.2em] text-void/55">
+                Biome
+              </span>
+              {BIOMES.map((b, i) => {
+                const active = b.id === biome.id;
+                return (
+                  <button
+                    key={b.id}
+                    ref={(el) => {
+                      items.current[i] = el;
+                    }}
+                    type="button"
+                    role="menuitemradio"
+                    aria-checked={active}
+                    onClick={() => choose(b.id)}
+                    className={`flex w-full items-center gap-2 rounded-md px-1.5 py-1 text-left text-[0.8rem] transition-colors ${
+                      active ? "bg-void/10 font-semibold" : "hover:bg-void/[0.07] focus-visible:bg-void/[0.07]"
+                    }`}
+                  >
+                    <span className="min-w-0 flex-1">{b.label}</span>
+                    <span
+                      aria-hidden="true"
+                      className={`h-1.5 w-1.5 shrink-0 rounded-full bg-ember transition-opacity ${
+                        active ? "opacity-100" : "opacity-0"
+                      }`}
+                    />
+                  </button>
+                );
+              })}
+            </Cloud>
+          </div>
+        </>
       )}
 
       <button

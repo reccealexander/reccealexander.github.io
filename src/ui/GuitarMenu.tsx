@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { guitar } from "@/lib/copy";
 import { setMusicPlaying } from "@/lib/music";
+import Cloud, { THOUGHT_DELAY, ThoughtDots } from "./Cloud";
 
 /**
  * "playing guitar", in the description, with a few recordings behind it.
@@ -33,7 +34,8 @@ export default function GuitarMenu({ label }: { label: string }) {
     if (!el) return;
     const r = el.getBoundingClientRect();
     const left = r.left - nudge;
-    const margin = 10;
+    // The puffs stand out past the box by about this much.
+    const margin = 24;
     const over = left + r.width - (window.innerWidth - margin);
     setNudge(over > 0 ? -over : left < margin ? margin - left : 0);
     // Measured once as it opens.
@@ -140,63 +142,75 @@ export default function GuitarMenu({ label }: { label: string }) {
       </button>
 
       {open && (
-        <span
-          ref={menu}
-          role="group"
-          aria-label="Guitar recordings"
-          style={{ transform: `translateX(calc(-50% + ${nudge}px))` }}
-          className="pop-in absolute origin-bottom bottom-full left-1/2 z-20 mb-2 block w-56 rounded-xl border border-white/10 bg-void/95 p-1.5 text-left shadow-[0_12px_32px_rgba(0,0,0,0.5)] backdrop-blur-md [text-shadow:none]"
-        >
-          {guitar.map((t) => {
-            const on = playing === t.id;
-            return (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => play(t.id, t.src)}
-                aria-pressed={on}
-                aria-label={`${on ? "Pause" : "Play"} ${t.title}`}
-                className={`relative flex w-full items-center gap-2.5 overflow-hidden rounded-lg px-2.5 py-2 text-[0.8rem] transition-colors ${
-                  on ? "bg-white/10 text-bloom" : "text-ink/90 hover:bg-white/5 hover:text-ink"
-                }`}
-              >
-                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-white/10">
-                  {on ? (
-                    <svg viewBox="0 0 12 12" className="h-2.5 w-2.5" fill="currentColor" aria-hidden="true">
-                      <rect x="2" y="1.5" width="2.6" height="9" rx="0.6" />
-                      <rect x="7.4" y="1.5" width="2.6" height="9" rx="0.6" />
-                    </svg>
-                  ) : (
-                    <svg viewBox="0 0 12 12" className="ml-0.5 h-2.5 w-2.5" fill="currentColor" aria-hidden="true">
-                      <path d="M2.5 1.4v9.2a.5.5 0 0 0 .76.43l7.4-4.6a.5.5 0 0 0 0-.86l-7.4-4.6a.5.5 0 0 0-.76.43Z" />
-                    </svg>
-                  )}
-                </span>
-                <span className="min-w-0 flex-1 truncate text-left">{t.title}</span>
-                {/* A little level meter while it plays. */}
-                {on && (
-                  <span aria-hidden="true" className="flex h-3 items-end gap-[2px]">
-                    {[0, 1, 2].map((i) => (
+        <>
+          {/* A thought bubble: two dots up off the phrase, then the cloud. */}
+          <ThoughtDots className="bottom-full left-1/2 mb-0.5" />
+          <span
+            ref={menu}
+            role="group"
+            aria-label="Guitar recordings"
+            style={{ transform: `translateX(calc(-50% + ${nudge}px))` }}
+            className="absolute bottom-full left-1/2 z-20 mb-[2.6rem] block w-48 text-left [text-shadow:none]"
+          >
+            <Cloud
+              puff={0.42}
+              opacity={1}
+              className="bubble-pop origin-bottom"
+              style={{ animationDelay: THOUGHT_DELAY }}
+              bodyClassName="py-0.5"
+            >
+              {guitar.map((t) => {
+                const on = playing === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => play(t.id, t.src)}
+                    aria-pressed={on}
+                    aria-label={`${on ? "Pause" : "Play"} ${t.title}`}
+                    className={`relative flex w-full items-center gap-2 overflow-hidden rounded-md px-1.5 py-1 text-[0.78rem] transition-colors ${
+                      on ? "bg-void/10 font-semibold" : "hover:bg-void/[0.07]"
+                    }`}
+                  >
+                    <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-void/10">
+                      {on ? (
+                        <svg viewBox="0 0 12 12" className="h-2 w-2" fill="currentColor" aria-hidden="true">
+                          <rect x="2" y="1.5" width="2.6" height="9" rx="0.6" />
+                          <rect x="7.4" y="1.5" width="2.6" height="9" rx="0.6" />
+                        </svg>
+                      ) : (
+                        <svg viewBox="0 0 12 12" className="ml-px h-2 w-2" fill="currentColor" aria-hidden="true">
+                          <path d="M2.5 1.4v9.2a.5.5 0 0 0 .76.43l7.4-4.6a.5.5 0 0 0 0-.86l-7.4-4.6a.5.5 0 0 0-.76.43Z" />
+                        </svg>
+                      )}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate text-left">{t.title}</span>
+                    {/* A little level meter while it plays. */}
+                    {on && (
+                      <span aria-hidden="true" className="flex h-3 items-end gap-[2px]">
+                        {[0, 1, 2].map((i) => (
+                          <span
+                            key={i}
+                            className="guitar-bar w-[2px] rounded-full bg-ember"
+                            style={{ animationDelay: `${i * 0.18}s` }}
+                          />
+                        ))}
+                      </span>
+                    )}
+                    {/* How far through it is. */}
+                    {on && (
                       <span
-                        key={i}
-                        className="guitar-bar w-[2px] rounded-full bg-bloom"
-                        style={{ animationDelay: `${i * 0.18}s` }}
+                        aria-hidden="true"
+                        className="absolute bottom-0 left-0 h-[2px] bg-ember/70"
+                        style={{ width: `${progress * 100}%` }}
                       />
-                    ))}
-                  </span>
-                )}
-                {/* How far through it is. */}
-                {on && (
-                  <span
-                    aria-hidden="true"
-                    className="absolute bottom-0 left-0 h-[2px] bg-bloom/60"
-                    style={{ width: `${progress * 100}%` }}
-                  />
-                )}
-              </button>
-            );
-          })}
-        </span>
+                    )}
+                  </button>
+                );
+              })}
+            </Cloud>
+          </span>
+        </>
       )}
     </span>
   );

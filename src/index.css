@@ -18,6 +18,8 @@
      orange and is reserved for the product. */
   --color-bloom: #f2c744;
   --color-ember: #e4813f;
+  /* The menus' thought-bubble clouds (ui/Cloud). */
+  --color-cloud: #f6f1e7;
 
   --font-display: "Trebuchet MS", "Lucida Grande", "Lucida Sans Unicode", sans-serif;
   --font-sans: "Trebuchet MS", "Lucida Grande", "Lucida Sans Unicode", sans-serif;
@@ -110,18 +112,6 @@ section[id] {
 @media (max-width: 640px) {
   :root {
     --pane-tint: 90%;
-  }
-}
-
-/* The biome menu lifts out of its pill rather than appearing. */
-@keyframes biome-menu-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px) scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
   }
 }
 
@@ -329,21 +319,8 @@ section[id] {
   }
 }
 
-/* The guitar menu (ui/GuitarMenu): grown up out of the phrase, and the little
-   level meter beside the track that is playing. */
-@keyframes pop-in {
-  from {
-    opacity: 0;
-    scale: 0.9;
-  }
-  to {
-    opacity: 1;
-    scale: 1;
-  }
-}
-.pop-in {
-  animation: pop-in 0.16s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
-}
+/* The little level meter beside the guitar track that is playing
+   (ui/GuitarMenu). */
 @keyframes guitar-bar {
   0%,
   100% {
@@ -358,8 +335,32 @@ section[id] {
   animation: guitar-bar 0.7s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
-  .pop-in,
   .guitar-bar {
+    animation: none;
+  }
+}
+
+/* A thought bubble forming (ui/Cloud): each puff of it pops in after the last,
+   quickly — the dots, then the cloud. */
+@keyframes bubble-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.bubble-pop {
+  animation: bubble-pop 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bubble-pop {
     animation: none;
   }
 }
