@@ -81,10 +81,10 @@ export default function CdPlayer({
 
   return (
     <svg viewBox="0 0 268 130" className="absolute left-0 top-0 block h-auto w-[278px] overflow-visible" aria-label="CD player">
-      {/* The lead: plugged into the side by a jack, coiling away below — and
-          ending inside the cloud. */}
+      {/* The lead: plugged into the side by a jack, running away down to the
+          left and on under the cloud's edge (ui/Cloud trims it there). */}
       <path
-        d={`M${P.x - 15},${BOTTOM - 10} C${P.x - 24},${BOTTOM - 10} ${P.x - 28},${BOTTOM - 4} ${P.x - 25},${BOTTOM + 1} C${P.x - 22},${BOTTOM + 5} ${P.x - 14},${BOTTOM + 5} ${P.x - 9},${BOTTOM + 2}`}
+        d={`M${P.x - 15},${BOTTOM - 10} C${P.x - 32},${BOTTOM - 10} ${P.x - 40},${BOTTOM + 4} ${P.x - 52},${BOTTOM + 22} S${P.x - 80},${BOTTOM + 62} ${P.x - 110},${BOTTOM + 86}`}
         fill="none"
         stroke={INK}
         strokeWidth={3.4}
