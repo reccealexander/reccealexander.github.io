@@ -123,7 +123,6 @@ export default function BiomePicker() {
             className="absolute bottom-full right-0 mb-[2.9rem] w-max"
           >
             <Cloud
-              opacity={1}
               className="bubble-pop origin-bottom-right"
               style={{ animationDelay: THOUGHT_DELAY }}
               bodyClassName="w-36"

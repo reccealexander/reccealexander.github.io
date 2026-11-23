@@ -149,7 +149,6 @@ export default function DrawingMenu({ label }: { label: string }) {
             className="absolute bottom-full left-1/2 z-20 mb-[2.75rem] block w-max text-left [text-shadow:none]"
           >
             <Cloud
-              opacity={1}
               className="bubble-pop origin-bottom"
               style={thoughtTiming(PACE)}
               bodyClassName=""
@@ -190,7 +189,6 @@ export default function DrawingMenu({ label }: { label: string }) {
               {/* Title over the drawing on a wide screen; beside it on a narrow
                   one, where the cloud's own shape leaves no room above. */}
               <Cloud
-                opacity={1}
                 bodyClassName="flex flex-row items-center gap-3 sm:flex-col sm:gap-2"
               >
                 <p className="w-24 text-left text-sm font-semibold leading-snug sm:w-auto sm:text-center sm:text-lg">

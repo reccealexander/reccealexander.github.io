@@ -35,7 +35,7 @@ export default function Cloud({
   className = "",
   bodyClassName = "",
   style,
-  opacity = 1,
+  opacity = 0.94,
   children,
 }: {
   className?: string;
@@ -60,6 +60,9 @@ export default function Cloud({
   // Scaled, as a whole, until the contents fit the roomy middle with a margin
   // to spare; the contents sit at the cloud's middle.
   let pad: { l: number; r: number; t: number; b: number } | null = null;
+  // The pen line: about a fiftieth of the cloud's width, as in the drawing it
+  // is traced from, within reason for very small and very large clouds.
+  let line = 5;
   if (size) {
     const fit = room(size.w / Math.max(1, size.h));
     const s = Math.max(size.w / (fit.w * VIEW.w), size.h / (fit.h * VIEW.h));
@@ -68,6 +71,7 @@ export default function Cloud({
     const l = MIDDLE.x * W - size.w / 2;
     const t = MIDDLE.y * H - size.h / 2;
     pad = { l, t, r: W - size.w - l, b: H - size.h - t };
+    line = Math.min(9, Math.max(4.5, W * 0.019));
   }
 
   return (
@@ -89,7 +93,7 @@ export default function Cloud({
             fill="var(--color-cloud)"
             fillOpacity={opacity}
             stroke="#141414"
-            strokeWidth={2.6}
+            strokeWidth={line}
             strokeLinejoin="round"
             vectorEffect="non-scaling-stroke"
           />
@@ -119,9 +123,9 @@ export const thoughtTiming = (pace = 1) => ({
 });
 
 const DOTS = [
-  { size: 7, x: 0, y: 0 },
-  { size: 11, x: 8, y: 10 },
-  { size: 16, x: 19, y: 24 },
+  { size: 8, x: 0, y: 0, line: 2.5 },
+  { size: 12, x: 8, y: 10, line: 3 },
+  { size: 18, x: 19, y: 24, line: 3.5 },
 ];
 
 export function ThoughtDots({
@@ -134,12 +138,14 @@ export function ThoughtDots({
   pace?: number;
 }) {
   return (
-    <span aria-hidden="true" className={`pointer-events-none absolute h-10 w-[35px] ${className}`}>
+    <span aria-hidden="true" className={`pointer-events-none absolute h-[42px] w-[37px] ${className}`}>
       {DOTS.map((d, i) => (
         <span
           key={d.size}
-          className="bubble-pop absolute rounded-full border-2 border-[#141414] bg-cloud shadow-[0_3px_8px_rgba(0,0,0,0.3)]"
+          className="bubble-pop absolute rounded-full border-solid border-[#141414] shadow-[0_3px_8px_rgba(0,0,0,0.3)]"
           style={{
+            borderWidth: d.line,
+            backgroundColor: "rgb(246 241 231 / 0.94)",
             width: d.size,
             height: d.size,
             bottom: d.y,

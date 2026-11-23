@@ -165,7 +165,6 @@ export default function GuitarMenu({ label }: { label: string }) {
             className="absolute bottom-full left-1/2 z-20 mb-[2.75rem] block w-max text-left [text-shadow:none]"
           >
             <Cloud
-              opacity={1}
               className="bubble-pop origin-bottom"
               style={thoughtTiming(PACE)}
               bodyClassName=""
