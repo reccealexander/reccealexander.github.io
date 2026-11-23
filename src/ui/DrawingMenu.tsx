@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { drawing } from "@/lib/copy";
 import { reducedMotion } from "@/three/quality";
-import Cloud, { ThoughtDots, thoughtTiming } from "./Cloud";
+import Cloud, { DOT_ANCHOR } from "./Cloud";
 
 /**
  * "drawing", in the description, with the drawing behind it.
@@ -140,17 +140,17 @@ export default function DrawingMenu({ label }: { label: string }) {
 
       {open && (
         <>
-          {/* A thought bubble: two dots up off the phrase, then the cloud. */}
-          <ThoughtDots pace={PACE} className="bottom-full left-1/2 mb-0.5" />
+          {/* A thought bubble: rings up off the phrase, then the cloud. */}
           <span
             ref={menu}
             data-groundhog-menu=""
-            style={{ transform: `translateX(calc(-50% + ${nudge}px))` }}
-            className="absolute bottom-full left-1/2 z-20 mb-[2.75rem] block w-max text-left [text-shadow:none]"
+            // The smallest ring over the phrase.
+            style={{ transform: `translateX(calc(${-DOT_ANCHOR * 100}% + ${nudge}px))` }}
+            className="absolute bottom-full left-1/2 z-20 mb-0.5 block w-max text-left [text-shadow:none]"
           >
             <Cloud
-              className="bubble-pop origin-bottom"
-              style={thoughtTiming(PACE)}
+              dots="left"
+              pace={PACE}
               bodyClassName=""
             >
               <button
@@ -200,7 +200,7 @@ export default function DrawingMenu({ label }: { label: string }) {
                   width={2400}
                   height={1874}
                   className="block rounded-lg shadow-[0_4px_14px_rgba(0,0,0,0.22)]"
-                  style={{ height: "min(42vh, 31vw)", width: "auto" }}
+                  style={{ height: "min(37vh, 27vw)", width: "auto" }}
                 />
               </Cloud>
             </div>

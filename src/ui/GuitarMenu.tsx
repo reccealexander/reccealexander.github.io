@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { guitar } from "@/lib/copy";
 import { setMusicPlaying } from "@/lib/music";
-import Cloud, { ThoughtDots, thoughtTiming } from "./Cloud";
+import Cloud, { DOT_ANCHOR } from "./Cloud";
 
 /**
  * "playing guitar", in the description, with a few recordings behind it.
@@ -154,19 +154,19 @@ export default function GuitarMenu({ label }: { label: string }) {
 
       {open && (
         <>
-          {/* A thought bubble: two dots up off the phrase, then the cloud. */}
-          <ThoughtDots pace={PACE} className="bottom-full left-1/2 mb-0.5" />
+          {/* A thought bubble: rings up off the phrase, then the cloud. */}
           <span
             ref={menu}
             data-groundhog-menu=""
             role="group"
             aria-label="Guitar recordings"
-            style={{ transform: `translateX(calc(-50% + ${nudge}px))` }}
-            className="absolute bottom-full left-1/2 z-20 mb-[2.75rem] block w-max text-left [text-shadow:none]"
+            // The smallest ring over the phrase.
+            style={{ transform: `translateX(calc(${-DOT_ANCHOR * 100}% + ${nudge}px))` }}
+            className="absolute bottom-full left-1/2 z-20 mb-0.5 block w-max text-left [text-shadow:none]"
           >
             <Cloud
-              className="bubble-pop origin-bottom"
-              style={thoughtTiming(PACE)}
+              dots="left"
+              pace={PACE}
               bodyClassName=""
             >
               {guitar.map((t) => {

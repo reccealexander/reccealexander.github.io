@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { BIOMES, type BiomeId } from "@/lib/biomes";
 import { useBiome } from "./BiomeContext";
-import Cloud, { THOUGHT_DELAY, ThoughtDots } from "./Cloud";
+import Cloud from "./Cloud";
 
 /**
  * Changes what the field is made of.
@@ -114,17 +114,18 @@ export default function BiomePicker() {
     >
       {open && (
         <>
-          {/* A thought bubble: two dots up off the button, then the cloud. */}
-          <ThoughtDots flip className="bottom-full right-12 mb-1" />
+          {/* A thought bubble: rings up off the button, then the cloud —
+              trailing to the right, mirrored, since it opens leftward. */}
           <div
             role="menu"
             aria-label="Biome"
             onKeyDown={onMenuKey}
-            className="absolute bottom-full right-0 mb-[2.9rem] w-max"
+            // Lined up with the button's right edge, which keeps it on the
+            // screen and puts the smallest ring over the button.
+            className="absolute bottom-full right-0 mb-0.5 w-max"
           >
             <Cloud
-              className="bubble-pop origin-bottom-right"
-              style={{ animationDelay: THOUGHT_DELAY }}
+              dots="right"
               bodyClassName="w-36"
             >
               <span className="block px-1.5 pb-1 text-[0.6rem] uppercase tracking-[0.2em] text-void/55">
