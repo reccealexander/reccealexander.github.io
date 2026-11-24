@@ -16,8 +16,6 @@ import { useState, type KeyboardEvent } from "react";
 type Track = { id: string; title: string };
 
 const INK = "#141414";
-/** Silvery, and only just told apart. */
-const DISC = ["#d6d9dc", "#cfd3d7", "#d9d6d1", "#d1d6d3", "#d7d2d5"];
 
 /** The player: a square clear lid, with the strip of controls under it. */
 const P = { x: 8, y: 4, size: 100 };
@@ -40,89 +38,93 @@ function wedge(x: number, y: number, r0: number, r1: number, a0: number, a1: num
   return `M${p(r0, a0)} L${p(r1, a0)} A${r1},${r1} 0 0 1 ${p(r1, a1)} L${p(r0, a1)} A${r0},${r0} 0 0 0 ${p(r0, a0)}Z`;
 }
 
-/** The spectrum a disc throws back, blended smoothly between these stops —
-    soft, so the silver shows through. */
+/** The spectrum, red to violet. */
 const STOPS = [
-  [255, 138, 138],
-  [255, 196, 107],
-  [255, 240, 122],
-  [139, 232, 160],
-  [124, 200, 255],
-  [180, 156, 255],
+  [255, 110, 110],
+  [255, 190, 90],
+  [255, 245, 110],
+  [110, 230, 150],
+  [100, 190, 255],
+  [170, 130, 255],
 ];
-const SLICES = 72;
-/** The colour of slice k when the spectrum goes round `cycles` times. */
-const spectrum = (k: number, cycles: number) => {
-  const t = ((k / SLICES) * cycles * STOPS.length) % STOPS.length;
-  const a = STOPS[Math.floor(t)];
-  const b = STOPS[(Math.floor(t) + 1) % STOPS.length];
-  const f = t - Math.floor(t);
+/** The colour a fraction t (0..1) of the way through the spectrum. */
+const hue = (t: number) => {
+  const u = Math.min(0.999, Math.max(0, t)) * (STOPS.length - 1);
+  const a = STOPS[Math.floor(u)];
+  const b = STOPS[Math.floor(u) + 1];
+  const f = u - Math.floor(u);
   return `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * f)).join(" ")})`;
 };
 
-/** Each disc catches the light its own way: how many times the spectrum goes
-    round it, and how many bright flashes it has. */
+/**
+ * Each disc catches the light its own way: how many rainbow streaks cross it
+ * (each with its twin opposite, as on a real disc) and how wide they are.
+ */
 const SHEEN = [
-  { cycles: 2, flashes: 2 },
-  { cycles: 1, flashes: 1 },
-  { cycles: 4, flashes: 3 },
-  { cycles: 2, flashes: 1 },
-  { cycles: 3, flashes: 4 },
+  { streaks: 1, width: 42 },
+  { streaks: 2, width: 28 },
+  { streaks: 3, width: 20 },
+  { streaks: 1, width: 58 },
+  { streaks: 2, width: 36 },
 ];
+
+/** The silver, in thin slices: brightest facing the light, darker across it. */
+const SLICES = 72;
 
 function Disc({
   x,
   y,
   r,
-  colour,
   turn = 0,
-  cycles = 2,
-  flashes = 2,
+  streaks = 1,
+  width = 40,
 }: {
   x: number;
   y: number;
   r: number;
-  colour: string;
   turn?: number;
-  cycles?: number;
-  flashes?: number;
+  streaks?: number;
+  width?: number;
 }) {
-  const inner = r * 0.38;
-  const n = SLICES;
+  const data = r * 0.47;
+  const slice = 360 / SLICES;
+  // The rainbow streaks: across each one the colour runs through the
+  // spectrum, strongest in its middle, fading out at its edges.
+  const rays: { a0: number; a1: number; colour: string; alpha: number }[] = [];
+  for (let k = 0; k < streaks * 2; k++) {
+    const centre = turn + 20 + (k * 180) / streaks;
+    const steps = Math.max(6, Math.round(width / 2.5));
+    for (let j = 0; j < steps; j++) {
+      const t = (j + 0.5) / steps;
+      const a0 = centre - width / 2 + (j * width) / steps;
+      rays.push({ a0, a1: a0 + width / steps + 0.8, colour: hue(t), alpha: 0.62 * Math.sin(Math.PI * t) });
+    }
+  }
   return (
     <>
-      <circle cx={x} cy={y} r={r} fill={colour} />
-      {/* The rainbow, in soft sectors round the shiny part. */}
-      {Array.from({ length: n }, (_, k) => (
-        <path
-          key={k}
-          d={wedge(x, y, inner, r, turn + (k * 360) / n, turn + ((k + 1) * 360) / n + 1.6)}
-          fill={spectrum(k, cycles)}
-          fillOpacity={0.4}
-        />
-      ))}
-      {/* A gloss over it all: bright near the middle and at the rim. */}
-      <circle cx={x} cy={y} r={r} fill="url(#cd-shine)" />
-      {/* Bright flashes where the light catches it, spaced round evenly. */}
-      {Array.from({ length: flashes }, (_, f) => {
-        const at = turn + 34 + (f * 360) / flashes;
-        const width = 16 / Math.sqrt(flashes);
-        return (
-          <path key={f} d={wedge(x, y, inner, r, at, at + width)} fill="#fff" fillOpacity={f === 0 ? 0.5 : 0.35} />
-        );
+      {/* Brushed silver. */}
+      {Array.from({ length: SLICES }, (_, k) => {
+        const a = k * slice;
+        const v = Math.round(196 + 40 * Math.cos(((a - turn - 20) * 2 * Math.PI) / 180));
+        return <path key={k} d={wedge(x, y, data, r, a, a + slice + 0.8)} fill={`rgb(${v} ${v + 2} ${v + 5})`} />;
       })}
-      {/* A glint across the top. */}
-      <path
-        d={`M${x - r * 0.62},${y - r * 0.5} A${r * 0.8},${r * 0.8} 0 0 1 ${x + r * 0.15},${y - r * 0.78}`}
-        fill="none"
-        stroke="#fff"
-        strokeOpacity={0.8}
-        strokeWidth={2.2}
-        strokeLinecap="round"
-      />
+      {/* The rainbow, only where the light catches it. */}
+      {rays.map((ray, k) => (
+        <path key={`r${k}`} d={wedge(x, y, data, r, ray.a0, ray.a1)} fill={ray.colour} fillOpacity={ray.alpha} />
+      ))}
+      {/* A white glint along the leading edge of each streak. */}
+      {Array.from({ length: streaks * 2 }, (_, k) => {
+        const at = turn + 20 + (k * 180) / streaks - width / 2 - 5;
+        return <path key={`g${k}`} d={wedge(x, y, data, r, at, at + 5)} fill="#fff" fillOpacity={k % 2 ? 0.45 : 0.75} />;
+      })}
+      {/* The edge of the recorded area, and the rim. */}
+      <circle cx={x} cy={y} r={r * 0.94} fill="none" stroke="#fff" strokeOpacity={0.35} strokeWidth={0.8} />
       <circle cx={x} cy={y} r={r} fill="none" stroke={INK} strokeWidth={2.2} />
-      <circle cx={x} cy={y} r={inner} fill="#f2eee6" stroke={INK} strokeWidth={1.6} />
-      <circle cx={x} cy={y} r={r * 0.12} fill={INK} />
+      {/* The hub: a clear plastic ring, a silver one inside it, and the hole. */}
+      <circle cx={x} cy={y} r={data} fill="#e9edf0" fillOpacity={0.85} stroke="#8a9196" strokeWidth={0.9} />
+      <circle cx={x} cy={y} r={r * 0.27} fill="#c3c8cc" stroke="#7d8489" strokeWidth={0.9} />
+      <circle cx={x} cy={y} r={r * 0.27} fill="none" stroke="#fff" strokeOpacity={0.5} strokeWidth={0.8} strokeDasharray="2 3" />
+      <circle cx={x} cy={y} r={r * 0.12} fill="#1b1f22" stroke={INK} strokeWidth={1.2} />
     </>
   );
 }
@@ -205,10 +207,9 @@ export default function CdPlayer({
                 x={discX(i)}
                 y={SEAT.y}
                 r={R}
-                colour={DISC[i % DISC.length]}
-                turn={i * 23}
-                cycles={SHEEN[i % SHEEN.length].cycles}
-                flashes={SHEEN[i % SHEEN.length].flashes}
+                turn={i * 31}
+                streaks={SHEEN[i % SHEEN.length].streaks}
+                width={SHEEN[i % SHEEN.length].width}
               />
             </g>
           </g>
@@ -234,12 +235,6 @@ export default function CdPlayer({
       <rect x={P.x} y={LID_BOTTOM} width={P.size} height={BOTTOM - LID_BOTTOM} fill="url(#cd-copper)" />
       {/* The display: amber on near-black, in a terminal face, glowing. */}
       <defs>
-        <radialGradient id="cd-shine">
-          <stop offset="0.38" stopColor="#fff" stopOpacity={0.45} />
-          <stop offset="0.62" stopColor="#fff" stopOpacity={0} />
-          <stop offset="0.9" stopColor="#fff" stopOpacity={0.1} />
-          <stop offset="1" stopColor="#fff" stopOpacity={0.35} />
-        </radialGradient>
         <filter id="cd-glow" x="-20%" y="-50%" width="140%" height="200%">
           <feGaussianBlur stdDeviation="0.9" result="blur" />
           <feMerge>
