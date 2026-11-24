@@ -67,7 +67,9 @@ export default function GuitarMenu({ label }: { label: string }) {
     if (!el) return;
     const p = pend.current;
     el.style.transformOrigin = `${HANG_X}px ${-p.length}px`;
-    el.style.transform = p.theta ? `rotate(${p.theta}rad)` : "";
+    // Its angle is measured out from straight down toward the pointer's side;
+    // a CSS turn the other way round about a point above is what follows it.
+    el.style.transform = p.theta ? `rotate(${-p.theta}rad)` : "";
   };
   const run = () => {
     const p = pend.current;
