@@ -1,22 +1,21 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { guitar } from "@/lib/copy";
 import { setMusicPlaying } from "@/lib/music";
-import Cloud, { DOT_ANCHOR } from "./Cloud";
 import CdPlayer from "./CdPlayer";
 
 /**
  * "playing guitar", in the description, with a few recordings behind it.
  *
  * Hovering the phrase (or tapping it, on a phone, or pressing it from the
- * keyboard) bubbles up a cloud above it with a little CD player in it
- * (ui/CdPlayer): a disc pressed slides in and plays; stopped, it slides back
+ * keyboard) lets a little CD player down on its lead from above, to hang
+ * over it (ui/CdPlayer): a disc pressed slides in and plays; stopped, it slides back
  * out and the song goes back to its start. One plays at a time, through the
- * one audio element, and the cloud stays put while the cursor crosses the gap
- * from the phrase to it.
+ * one audio element, and the player stays put while the cursor crosses the
+ * gap from the phrase to it.
  * While anything plays, notes drift over the field (ui/MusicNotes).
  */
-/** The guitar menu bubbles up more slowly than the others: more of a thought. */
-const PACE = 2.2;
+/** Where its lead is, across the drawing: hung over the phrase from there. */
+const HANG_X = 60;
 
 export default function GuitarMenu({ label }: { label: string }) {
   const [open, setOpen] = useState(false);
@@ -26,11 +25,23 @@ export default function GuitarMenu({ label }: { label: string }) {
   const closeAt = useRef(0);
   const menu = useRef<HTMLSpanElement>(null);
   const [nudge, setNudge] = useState(0);
+  // Kept up a moment after it is put away, while it is drawn back up.
+  const [shown, setShown] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  useEffect(() => {
+    if (open) {
+      setShown(true);
+      setLeaving(false);
+      return;
+    }
+    setLeaving(true);
+    const t = window.setTimeout(() => setShown(false), 380);
+    return () => window.clearTimeout(t);
+  }, [open]);
 
-  // Centred over the phrase, but kept on the screen — checked again as the
-  // cloud grows to its full size, not only as it opens.
+  // Over the phrase, but kept on the screen.
   useLayoutEffect(() => {
-    if (!open) {
+    if (!shown) {
       setNudge(0);
       return;
     }
@@ -52,7 +63,7 @@ export default function GuitarMenu({ label }: { label: string }) {
     const watch = new ResizeObserver(fit);
     watch.observe(el);
     return () => watch.disconnect();
-  }, [open]);
+  }, [shown]);
 
   // The player, made once and stopped on the way out.
   useEffect(() => {
@@ -146,25 +157,22 @@ export default function GuitarMenu({ label }: { label: string }) {
         {label}
       </button>
 
-      {open && (
-        <>
-          {/* A thought bubble: rings up off the phrase, then the cloud. */}
-          <span
-            ref={menu}
-            data-groundhog-menu=""
-            role="group"
-            aria-label="Guitar recordings"
-            // The smallest ring over the phrase.
-            style={{ transform: `translateX(calc(${-DOT_ANCHOR * 100}% + ${nudge}px))` }}
-            className="absolute bottom-full left-1/2 z-20 mb-0.5 block w-max text-left [text-shadow:none]"
-          >
-            {/* The cloud is sized to the player and the nearest discs; the
-                rest of the row runs on under its edge. */}
-            <Cloud dots="left" pace={PACE} clip bodyClassName="h-[130px] w-[195px]">
-              <CdPlayer tracks={guitar} playing={playing} onPlay={play} onStop={stop} />
-            </Cloud>
+      {shown && (
+        // The player, let down on its lead from above — swinging a little
+        // as it comes to rest just over the phrase — and drawn back up when
+        // it is put away. Its window over the phrase.
+        <span
+          ref={menu}
+          data-groundhog-menu=""
+          role="group"
+          aria-label="Guitar recordings"
+          style={{ transform: `translateX(${nudge - HANG_X}px)` }}
+          className="absolute bottom-full left-1/2 z-20 mb-3 block w-max text-left [text-shadow:none]"
+        >
+          <span className={`block ${leaving ? "cd-rise" : "cd-drop"}`} style={{ transformOrigin: `${HANG_X}px -900px` }}>
+            <CdPlayer hang tracks={guitar} playing={playing} onPlay={play} onStop={stop} />
           </span>
-        </>
+        </span>
       )}
     </span>
   );

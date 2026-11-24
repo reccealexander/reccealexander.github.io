@@ -134,7 +134,10 @@ export default function CdPlayer({
   playing,
   onPlay,
   onStop,
+  hang = false,
 }: {
+  /** Hung from above by its lead, plugged into its top. */
+  hang?: boolean;
   tracks: readonly Track[];
   playing: string | null;
   onPlay: (id: string) => void;
@@ -159,7 +162,24 @@ export default function CdPlayer({
   const order = tracks.map((t, i) => ({ t, i })).reverse();
 
   return (
-    <svg viewBox="0 0 268 130" className="absolute left-0 top-0 block h-auto w-[278px] overflow-visible" aria-label="CD player">
+    <svg viewBox="0 0 268 130" className={`block h-auto w-[278px] overflow-visible ${hang ? "" : "absolute left-0 top-0"}`} aria-label="CD player">
+      {hang ? (
+        <>
+          {/* The lead it hangs by: straight up out of sight from a jack
+              plugged into the middle of its top. */}
+          <path
+            d={`M${SEAT.x},${P.y - 16} L${SEAT.x},${P.y - 1400}`}
+            stroke={INK}
+            strokeWidth={3.4}
+            strokeLinecap="round"
+            pointerEvents="none"
+          />
+          <rect x={SEAT.x - 4.5} y={P.y - 18} width={9} height={10} rx={2.5} fill="#2b2b2b" stroke={INK} strokeWidth={1.6} />
+          <rect x={SEAT.x - 2.4} y={P.y - 8.5} width={4.8} height={9} fill="#c9ccce" stroke={INK} strokeWidth={1.4} />
+          <path d={`M${SEAT.x - 2.4},${P.y - 4.5} h4.8`} stroke={INK} strokeWidth={1.4} />
+        </>
+      ) : (
+        <>
       {/* The lead: plugged into the side by a jack, running away down to the
           left and on under the cloud's edge (ui/Cloud trims it there). */}
       <path
@@ -173,6 +193,8 @@ export default function CdPlayer({
       <rect x={P.x - 17} y={BOTTOM - 14.5} width={10} height={9} rx={2.5} fill="#2b2b2b" stroke={INK} strokeWidth={1.6} />
       <rect x={P.x - 7.5} y={BOTTOM - 12.4} width={8.5} height={4.8} fill="#c9ccce" stroke={INK} strokeWidth={1.4} />
       <path d={`M${P.x - 3.6},${BOTTOM - 12.4} v4.8`} stroke={INK} strokeWidth={1.4} />
+        </>
+      )}
 
       {/* Inside the player, under the lid: a dark tray and its spindle. */}
       <rect x={P.x} y={P.y} width={P.size} height={LID_BOTTOM - P.y} fill="#2a3330" />

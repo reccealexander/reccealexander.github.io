@@ -386,3 +386,41 @@ section[id] {
     animation: none;
   }
 }
+
+/* The CD player let down on its lead (ui/GuitarMenu): it drops, swings a
+   little from the lead far above, and settles; put away, it is drawn back up. */
+@keyframes cd-drop {
+  0% {
+    transform: translateY(-320px);
+  }
+  50% {
+    transform: translateY(5px) rotate(1.4deg);
+  }
+  68% {
+    transform: translateY(-2px) rotate(-0.9deg);
+  }
+  84% {
+    transform: translateY(0) rotate(0.4deg);
+  }
+  100% {
+    transform: none;
+  }
+}
+.cd-drop {
+  animation: cd-drop 0.95s cubic-bezier(0.25, 0.8, 0.35, 1) both;
+}
+@keyframes cd-rise {
+  to {
+    transform: translateY(-340px);
+    opacity: 0;
+  }
+}
+.cd-rise {
+  animation: cd-rise 0.38s cubic-bezier(0.5, 0, 0.8, 0.4) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cd-drop,
+  .cd-rise {
+    animation: none;
+  }
+}
