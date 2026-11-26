@@ -31,6 +31,11 @@ export default function GuitarMenu({ label }: { label: string }) {
   const closeAt = useRef(0);
   const menu = useRef<HTMLSpanElement>(null);
   const [nudge, setNudge] = useState(0);
+  // Hung to the right of the text, when there is room for it there; where it
+  // sits then, relative to the phrase.
+  const [side, setSide] = useState<{ left: number; top: number } | null>(null);
+  // Whether the cursor has got to the player since it was let down.
+  const reached = useRef(false);
   // Kept up a moment after it is put away, while it is drawn back up.
   const [shown, setShown] = useState(false);
   const [leaving, setLeaving] = useState(false);
@@ -167,14 +172,23 @@ export default function GuitarMenu({ label }: { label: string }) {
     return () => window.clearTimeout(t);
   }, [open]);
 
-  // Over the phrase, but kept on the screen.
+  // To the right of the text, level with the phrase, if it fits between the
+  // text and the edge of the screen; otherwise over the phrase, kept on it.
   useLayoutEffect(() => {
     if (!shown) {
       setNudge(0);
+      setSide(null);
       return;
     }
     const el = menu.current;
     if (!el) return;
+    const phrase = root.current?.getBoundingClientRect();
+    const text = root.current?.closest("[data-hero-title]")?.getBoundingClientRect();
+    const size = el.getBoundingClientRect();
+    if (phrase && text && window.innerWidth - text.right >= size.width + 40) {
+      setSide({ left: text.right + 28 - phrase.left, top: phrase.height - size.height });
+      return;
+    }
     let current = 0;
     const fit = () => {
       const r = el.getBoundingClientRect();
@@ -230,13 +244,16 @@ export default function GuitarMenu({ label }: { label: string }) {
 
   const show = () => {
     window.clearTimeout(closeAt.current);
+    if (!open) reached.current = false;
     setOpen(true);
   };
-  // A moment's grace, so the cursor can get from the phrase to the menu.
+  // Grace for the cursor to get from the phrase over to the player — three
+  // seconds, since it hangs off to the side — and once it has been there, a
+  // moment's grace on leaving it.
   const hide = () => {
     if (pend.current.dragging) return;
     window.clearTimeout(closeAt.current);
-    closeAt.current = window.setTimeout(() => setOpen(false), 220);
+    closeAt.current = window.setTimeout(() => setOpen(false), reached.current ? 300 : 3000);
   };
 
   // Stopped: the disc comes back out, and the song goes back to its start.
@@ -295,8 +312,9 @@ export default function GuitarMenu({ label }: { label: string }) {
           data-groundhog-menu=""
           role="group"
           aria-label="Guitar recordings"
-          style={{ transform: `translateX(${nudge - HANG_X}px)` }}
-          className="absolute bottom-full left-1/2 z-20 mb-3 block w-max text-left [text-shadow:none]"
+          onPointerEnter={() => (reached.current = true)}
+          style={side ? { left: side.left, top: side.top } : { transform: `translateX(${nudge - HANG_X}px)` }}
+          className={`absolute z-20 block w-max text-left [text-shadow:none] ${side ? "" : "bottom-full left-1/2 mb-3"}`}
         >
           <span className={`block ${leaving ? "cd-rise" : "cd-drop"}`}>
             {/* Drag it to swing it. */}
